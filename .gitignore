@@ -1,0 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+.env
+
+# Windows NTFS Alternate Data Stream metadata (copied from WSL/Windows)
+*:Zone.Identifier
+
+# Editor/design-tool state (Kombai canvas)
+.kombai/
+

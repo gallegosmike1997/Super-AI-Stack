@@ -1,0 +1,39 @@
+PYTHON=python3
+
+SERVICES = gateway router llm_general llm_reasoning llm_coding vision speech image_gen memory
+
+.PHONY: all setup run stop $(SERVICES)
+
+all: setup
+
+setup:
+    $(PYTHON) -m venv .venv
+    . .venv/bin/activate && pip install --upgrade pip
+
+    @for svc in $(SERVICES); do \
+        if [ -d $$svc ]; then \
+            echo "[Super AI Stack] Setting up $$svc"; \
+            cd $$svc; \
+            $(PYTHON) -m venv venv; \
+            . venv/bin/activate && \
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; \
+            cd ..; \
+        fi; \
+    done
+
+run:
+    @echo "[Super AI Stack] Starting services..."
+    @uvicorn gateway.main:app --host 0.0.0.0 --port 8000 &
+    @uvicorn router.main:app --host 0.0.0.0 --port 8001 &
+    @uvicorn llm_general.main:app --host 0.0.0.0 --port 8002 &
+    @uvicorn llm_coding.main:app --host 0.0.0.0 --port 8003 &
+    @uvicorn memory.main:app --host 0.0.0.0 --port 8004 &
+    @uvicorn llm_reasoning.main:app --host 0.0.0.0 --port 8005 &
+    @uvicorn vision.main:app --host 0.0.0.0 --port 8006 &
+    @uvicorn speech.main:app --host 0.0.0.0 --port 8007 &
+    @uvicorn image_gen.main:app --host 0.0.0.0 --port 8008 &
+    @echo "[Super AI Stack] All services started."
+
+stop:
+    @echo "[Super AI Stack] Stopping services..."
+    @pkill -f "uvicorn main:app" || true

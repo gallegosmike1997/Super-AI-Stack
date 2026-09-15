@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUPER AI STACK — Local MoE Console</title>
+<style>
+:root{color-scheme:dark;--bg:#02040d;--panel:#070b19;--line:#1b2450;--cyan:#00e5ff;--violet:#8a2be2;--mag:#d946ef;--green:#20f59b;--ink:#eef3ff;--muted:#8ea0cf}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:15px 'Segoe UI',system-ui,sans-serif;background-image:linear-gradient(rgba(41,121,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(41,121,255,.06) 1px,transparent 1px),radial-gradient(circle at 50% 0%,rgba(138,43,226,.25),transparent 55%);background-size:32px 32px,32px 32px,100% 620px}
+.wrap{width:min(1240px,calc(100% - 24px));margin:0 auto;padding:14px 0 30px}
+.glass{background:linear-gradient(145deg,rgba(9,13,31,.94),rgba(3,5,14,.84));border:1px solid rgba(106,125,255,.25);border-radius:14px;box-shadow:0 18px 60px rgba(0,0,0,.38)}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:48px;height:48px;object-fit:cover;border-radius:10px;border:1px solid var(--cyan);box-shadow:0 0 18px rgba(0,229,255,.4)}
+.brand h1{margin:0;font:700 19px Verdana,sans-serif;letter-spacing:.14em}
+.brand h1 span{color:var(--mag)}
+.brand p{margin:2px 0 0;color:var(--muted);font:11px ui-monospace,monospace;letter-spacing:.18em;text-transform:uppercase}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs button{background:transparent;border:1px solid transparent;color:#c6d2f5;font:700 11px Verdana,sans-serif;letter-spacing:.12em;padding:9px 12px;border-radius:9px;cursor:pointer}
+nav.tabs button.on{background:rgba(138,43,226,.22);border-color:rgba(155,77,255,.55);color:#fff}
+.live{display:flex;align-items:center;gap:8px;font:700 11px ui-monospace,monospace;color:var(--green)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+.grid{display:grid;gap:12px;margin-top:12px}
+@media(min-width:1000px){.cols{grid-template-columns:250px minmax(0,1fr) 300px}}
+.card{padding:14px}
+.card h3{margin:0 0 10px;font:700 11px Verdana,sans-serif;letter-spacing:.18em;color:var(--muted)}
+.bar{height:5px;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--mag))}
+.msg{padding:10px 12px;border-radius:10px;border:1px solid var(--line);white-space:pre-wrap;position:relative;line-height:1.55}
+.msg.u{background:#231a45;margin-left:12%}
+.msg.a{background:#0d1326;border-left:3px solid var(--cyan)}
+.msg.err{background:#2a0f1a;border-left:3px solid #ff5c7a;color:#ffd7e0}
+.badge{position:absolute;top:-9px;right:10px;background:#0a1030;border:1px solid var(--violet);border-radius:99px;padding:2px 9px;font:700 10px ui-monospace,monospace;letter-spacing:.06em;color:#d9c6ff}
+.badge.live{border-color:var(--green);color:#b6ffe2}
+.code{background:#04071a;border:1px solid var(--line);border-radius:8px;padding:10px;margin:8px 0;overflow:auto;white-space:pre;font:12px ui-monospace,monospace;color:#c9e8ff}
+.cursor{display:inline-block;width:7px;height:14px;background:var(--cyan);margin-left:2px;vertical-align:-2px;animation:blink 1s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+.pill{padding:2px 8px;border-radius:99px;border:1px solid var(--green);font:700 10px ui-monospace,monospace;color:var(--green)}
+.pill.off{border-color:#ff5c7a;color:#ff5c7a}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="glass top"><div class="brand"><img src="/assets/SAS%20LOGO.png" alt="SAS logo" onerror="this.style.display='none'"><div><h1>SUPER <span>AI</span> STACK</h1><p>Local MoE console</p></div></div><nav class="tabs" id="tabs"><button class="on" data-view="dashboard">DASHBOARD</button><button data-view="stack">STACK</button><button data-view="models">MODELS</button><button data-view="memory">MEMORY</button><button data-view="activity">ACTIVITY</button></nav><div class="live"><span class="dot"></span><span id="health">checking</span></div></header>
+<section class="grid cols" id="view-dashboard">
+<aside class="glass card"><h3>System status</h3><div class="bar"></div><p id="sys" style="color:var(--muted);font-size:12px">Probing gateway + experts…</p><img src="/assets/SAS%20Dashboard.png" alt="SAS dashboard" style="width:100%;border-radius:10px;border:1px solid var(--line)" onerror="this.style.display='none'"></aside>
+<div class="glass card"><h3>Unified chat — router decides the expert</h3><div id="thread" style="display:flex;flex-direction:column;gap:10px;min-height:260px" aria-live="polite"></div><form id="chat"><textarea id="msg" rows="3" placeholder="Ask anything: chat, code, reasoning, vision, audio, image…" style="width:100%;background:#050816;border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:10px"></textarea><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center"><label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="mem"> use memory</label><input type="file" id="file" accept="image/*,audio/*"><input id="apikey" placeholder="x-api-key (if set)" style="background:#050816;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px;min-width:170px"><button>Send</button><span id="route" style="font-size:12px;color:var(--cyan)"></span></div></form></div>
+<aside class="glass card"><h3>Live stack</h3><div id="mini"></div><img src="/assets/SAS%20Concept.png" alt="SAS concept" style="width:100%;margin-top:10px;border-radius:10px" onerror="this.style.display='none'"></aside>
+</section>
+<section class="grid cols" id="view-stack" hidden><div class="glass card"><h3>Pipeline</h3><p style="color:var(--muted);font-size:13px;line-height:1.7">client → gateway → router (Phi-3) → memory (FAISS) → expert<br>expert → router merge → reasoning polish → one answer</p><img src="/assets/SAS%20Stack.png" alt="SAS stack" style="width:100%;border-radius:10px" onerror="this.style.display='none'"></div><div class="glass card"><h3>Model table</h3><div id="catalog" style="font-size:13px"></div></div><div class="glass card"><h3>Palette</h3><img src="/assets/SAS%20Identity%20Pallete.png" alt="SAS palette" style="width:100%;border-radius:10px" onerror="this.style.display='none'"></div></section>
+<section class="grid cols" id="view-models" hidden><div class="glass card"><h3>Vision + memory</h3><img src="/assets/SAS%20Models.png" alt="SAS models" style="width:100%;border-radius:10px" onerror="this.style.display='none'"><img src="/assets/SAS%20Memory.png" alt="SAS memory" style="width:100%;border-radius:10px;margin-top:8px" onerror="this.style.display='none'"></div><div class="glass card"><h3>Expert health</h3><div id="health2" style="font-size:13px"></div></div><div class="glass card"><h3>Generation</h3><div id="gen"></div><img src="/assets/DB%20Navbar.png" alt="SAS nav" style="width:100%;border-radius:10px;margin-top:8px" onerror="this.style.display='none'"></div></section>
+<section class="grid cols" id="view-memory" hidden><div class="glass card"><h3>Add memory</h3><textarea id="memtext" rows="4" style="width:100%;background:#050816;border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:10px" placeholder="Paste durable knowledge…"></textarea><button id="memadd" style="margin-top:8px">Store in FAISS</button><p id="memout" style="font-size:12px;color:var(--green)"></p></div><div class="glass card"><h3>Session</h3><div id="sess" style="font-size:12px;color:var(--muted)">Send a chat message to open a session trace.</div></div><div class="glass card"><h3>Streams</h3><img src="/assets/SAS%20Activity.png" alt="SAS activity" style="width:100%;border-radius:10px" onerror="this.style.display='none'"></div></section>
+<section class="grid" id="view-activity" hidden><div class="glass card"><h3>Activity</h3><div id="log" style="font:12px ui-monospace,monospace;color:var(--muted)">Boot log ready.</div></div></section>
+</div>
+<script>
+const $=s=>document.querySelector(s);const thread=$('#thread'),log=$('#log'),route=$('#route'),session=crypto.randomUUID();
+const key=()=>($('#apikey').value||'').trim();
+const hdr=()=>key()?{'content-type':'application/json','x-api-key':key()}:{'content-type':'application/json'};
+const esc=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function md(t){
+  const out=[];t.split('```').forEach((b,i)=>{
+    if(i%2)out.push('<pre class="code">'+esc(b.replace(/^[a-zA-Z0-9_+.-]*\n/,''))+'</pre>');
+    else out.push(esc(b).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\n/g,'<br>'));
+  });
+  return out.join('');
+}
+const say=(t,c)=>{const d=document.createElement('div');d.className='msg '+(c==='u'?'u':c==='e'?'err':'a');if(c==='a'&&t) d.innerHTML=md(t);else d.textContent=t;thread.append(d);d.scrollIntoView({block:'nearest',behavior:'smooth'});return d};
+function paint(el,t,live){el.innerHTML=md(t)+(live?'<span class="cursor"></span>':'')}
+function badge(el,text,live){let b=el.querySelector('.badge');if(!b){b=document.createElement('span');b.className='badge';el.prepend(b)}b.textContent=text;b.classList.toggle('live',!!live)}
+const note=t=>{log.innerHTML+='<br>'+new Date().toLocaleTimeString()+' '+t};
+async function sse(res,onFrame){
+  const rd=res.body.getReader(),dc=new TextDecoder();let buf='';
+  for(;;){
+    const {value,done}=await rd.read();if(done)break;
+    buf+=dc.decode(value,{stream:true});
+    let cut;
+    while((cut=buf.indexOf('\n\n'))>=0){
+      const raw=buf.slice(0,cut);buf=buf.slice(cut+2);
+      let ev='message';const data=[];
+      raw.split('\n').forEach(line=>{
+        if(line.startsWith('event:'))ev=line.slice(6).trim();
+        else if(line.startsWith('data:'))data.push(line.slice(5).replace(/^ /,''));
+      });
+      if(data.length)onFrame(ev,data.join('\n'));
+    }
+  }
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');['dashboard','stack','models','memory','activity'].forEach(v=>$('#view-'+v).hidden=v!==b.dataset.view)});
+async function stack(){try{const o={headers:key()?{'x-api-key':key()}:{}};const r=await fetch('/api/stack',{headers:o.headers});const j=await r.json();$('#catalog').innerHTML=j.catalog.map(c=>'<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #273052"><span>'+c.layer+' → '+c.expert+'</span><b style="color:var(--cyan)">'+c.model+'</b></div>').join('');$('#mini').innerHTML=j.catalog.map(c=>'<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0"><span>'+c.layer+'</span><span>'+(j.services[c.expert]&&j.services[c.expert].status==='ok'?'🟢':'🔴')+'</span></div>').join('');$('#health2').innerHTML=Object.entries(j.services).map(([k,v])=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0"><span>'+k+'</span><span style="color:var(--muted);font-size:11px">'+(v.model||'')+'</span><span class="pill'+(v.backend==='configured'?'':' off')+'">'+(v.backend||v.status||'?')+'</span></div>').join('');$('#sys').textContent='Gateway online. '+j.catalog.length+' experts catalogued.';$('#health').textContent='online';}catch(e){$('#health').textContent='offline';$('#sys').textContent='Gateway unreachable.'}}
+stack();setInterval(stack,15000);
+const read=f=>new Promise(r=>{if(!f)return r(null);const x=new FileReader();x.onload=()=>r({kind:f.type.startsWith('image/')?'image':'audio',uri:x.result,content_type:f.type});x.readAsDataURL(f)});
+let streaming=false;
+function setBusy(b,m){streaming=b;document.querySelector('#chat button').disabled=b;document.querySelector('#chat button').textContent=b?(m||'Streaming…'):'Send'}
+$('#chat').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(streaming)return;
+  const inp=$('#msg'),file=$('#file').files[0],text=inp.value.trim();
+  if(!text&&!file)return;
+  inp.value='';
+  say(text||file.name,'u');
+  const a=say('routing…','a');
+  const at=await read(file);
+  const ctl=new AbortController();
+  setBusy(true,'Routing…');
+  try{
+    const body={message:text,session_id:session,attachments:at?[at]:[],metadata:{use_memory:$('#mem').checked}};
+    if(at){
+      // Attachments go through the buffered endpoint (vision / speech experts).
+      const res=await fetch('/chat',{method:'POST',headers:hdr(),body:JSON.stringify(body),signal:ctl.signal});
+      if(!res.ok)throw new Error('gateway '+res.status);
+      const j=await res.json();
+      paint(a,j.response,false);
+      badge(a,j.expert+' · '+j.model,false);
+      route.innerHTML='<span class="pill">'+j.task_type+'</span> '+j.expert+' · '+j.model;
+      note('route='+j.task_type+' expert='+j.expert+' model='+j.model);
+      (j.artifacts||[]).forEach(x=>{
+        if(x.type==='image'&&x.data){
+          const im=document.createElement('img');
+          im.src='data:'+(x.mime_type||'image/png')+';base64,'+x.data;
+          im.style.width='100%';im.style.marginTop='8px';
+          a.append(im);
+          const g=$('#gen');g.innerHTML='';g.append(im.cloneNode(true));
+        }
+      });
+    }else{
+      const res=await fetch('/chat/stream',{method:'POST',headers:hdr(),body:JSON.stringify(body),signal:ctl.signal});
+      if(!res.ok)throw new Error('gateway '+res.status);
+      let answer='';
+      const stop=ev=>{if(ev.key==='Escape')ctl.abort()};
+      document.addEventListener('keydown',stop);
+      route.textContent='streaming… (Esc stops)';
+      try{
+        await sse(res,(ev,data)=>{
+          if(data==='[DONE]')return;
+          let j=null;try{j=JSON.parse(data)}catch(_){j=null}
+          if(ev==='meta'&&j){
+            badge(a,j.expert+' · '+j.model,true);
+            route.innerHTML='<span class="pill">'+j.task_type+'</span> '+j.expert+' · '+j.model+' <span style="color:var(--muted)">('+j.source+')</span>';
+            note('route='+j.task_type+' expert='+j.expert+' model='+j.model+' source='+j.source);
+            return;
+          }
+          if(ev==='error'&&j){note('stream error: '+j.detail);route.innerHTML='<span class="pill off">fallback</span> '+j.detail;return}
+          if(ev==='done'&&j){badge(a,j.expert+' · '+j.model,false);note('stream done ('+j.chars+' chars)');return}
+          if(ev==='delta'&&j){answer+=j.text;paint(a,answer,true);a.scrollIntoView({block:'nearest'})}
+        });
+      }catch(ab){note('stream stopped by user')}
+      document.removeEventListener('keydown',stop);
+      paint(a,answer||'No content returned.',false);
+      route.innerHTML+=' <span style="color:var(--muted)">· '+answer.length+' chars</span>';
+    }
+    const s=await fetch('/sessions/'+session,{headers:key()?{'x-api-key':key()}:{}}).then(r=>r.json()).catch(()=>null);
+    if(s)$('#sess').textContent=s.messages.slice(-8).join('\n');
+  }catch(err){
+    a.className='msg err';
+    a.textContent='Stack unavailable: '+((err&&err.message)||'start gateway + router + experts.');
+    route.innerHTML='<span class="pill off">offline</span>';
+    note('error: '+((err&&err.message)||err));
+  }
+  setBusy(false);
+  $('#file').value='';
+});$('#msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();document.querySelector('#chat button').click()}});
+$('#memadd').onclick=async()=>{const t=$('#memtext').value.trim();if(!t)return;const r=await fetch('/api/memory/add',{method:'POST',headers:hdr(),body:JSON.stringify({text:t})});$('#memout').textContent=r.ok?'Stored in FAISS.':'Memory service unavailable.'};
+</script>
+</body>
+</html>
+
