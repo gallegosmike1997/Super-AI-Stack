@@ -130,10 +130,79 @@ API_KEY = os.getenv("SUPER_AI_API_KEY", "")
 RATE_LIMIT = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
 REQUESTS: dict[str, deque[float]] = defaultdict(deque)
 METRICS = {"requests_total": 0, "errors_total": 0, "stream_requests_total": 0}
+PROCESS_START = time.monotonic()
+LATENCIES: deque[float] = deque(maxlen=300)
+INFLIGHT = 0
+EVENTS: deque[dict] = deque(maxlen=60)
+
+
+def record_event(kind: str, **fields: object) -> None:
+    """Append to the live event feed shown on the Activity / Memory panels."""
+    EVENTS.appendleft({"t": time.strftime("%H:%M:%S"), "kind": kind, **fields})
+
+
+def _percentile(values: list[float], pct: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    return ordered[min(len(ordered) - 1, int(len(ordered) * pct / 100))]
+
+
+async def read_system() -> dict[str, object]:
+    """CPU% / memory from /proc - no psutil dependency, real numbers only."""
+    info: dict[str, object] = {}
+    try:
+        def cpu_ticks() -> tuple[int, int]:
+            with open("/proc/stat", encoding="ascii") as handle:
+                parts = handle.readline().split()[1:]
+            values = [int(v) for v in parts]
+            return sum(values), values[3] + values[4]
+
+        total_a, idle_a = cpu_ticks()
+        await asyncio.sleep(0.12)
+        total_b, idle_b = cpu_ticks()
+        busy = total_b - total_a - (idle_b - idle_a)
+        info["cpu_pct"] = round(100 * busy / max(1, total_b - total_a), 1)
+        with open("/proc/loadavg", encoding="ascii") as handle:
+            info["load_1"] = float(handle.read().split()[0])
+        with open("/proc/meminfo", encoding="ascii") as handle:
+            fields = {line.split(":")[0]: int(line.split()[1]) for line in handle}
+        mem_total = fields.get("MemTotal", 0)
+        mem_avail = fields.get("MemAvailable", 0)
+        info["mem_total_gb"] = round(mem_total / 1024 / 1024, 1)
+        info["mem_used_gb"] = round((mem_total - mem_avail) / 1024 / 1024, 1)
+        with open("/proc/cpuinfo", encoding="ascii") as handle:
+            info["cores"] = sum(1 for line in handle if line.startswith("processor"))
+    except OSError:
+        info = {"cpu_pct": None, "load_1": None, "mem_total_gb": None, "mem_used_gb": None, "cores": None}
+    return info
+
+
+def gateway_stats() -> dict[str, object]:
+    latencies = [v * 1000 for v in LATENCIES]
+    minute_ago = time.monotonic() - 60
+    recent = sum(1 for client in REQUESTS.values() for stamp in client if stamp > minute_ago)
+    uptime = time.monotonic() - PROCESS_START
+    errors = METRICS["errors_total"]
+    total = METRICS["requests_total"]
+    return {
+        "uptime_s": int(uptime),
+        "uptime_h": round(uptime / 3600, 1),
+        "requests_total": total,
+        "stream_requests_total": METRICS["stream_requests_total"],
+        "errors_total": errors,
+        "success_rate": round(100 * (total - errors) / total, 2) if total else None,
+        "req_per_min": recent,
+        "inflight": INFLIGHT,
+        "latency_avg_ms": round(sum(latencies) / len(latencies), 1) if latencies else None,
+        "latency_p50_ms": round(_percentile(latencies, 50), 1) if latencies else None,
+        "latency_p95_ms": round(_percentile(latencies, 95), 1) if latencies else None,
+    }
 
 
 @app.middleware("http")
 async def policy(request: Request, call_next):
+    global INFLIGHT
     if API_KEY and request.url.path not in {"/health", "/", "/ready", "/metrics"}:
         if request.url.path.startswith(("/assets/", "/api/stack")):
             return await call_next(request)
@@ -147,7 +216,14 @@ async def policy(request: Request, call_next):
     if len(window) >= RATE_LIMIT:
         return JSONResponse(status_code=429, content={"detail": "Rate limit exceeded"})
     window.append(now)
-    return await call_next(request)
+    INFLIGHT += 1
+    try:
+        response = await call_next(request)
+    finally:
+        INFLIGHT -= 1
+    if request.url.path.startswith(("/chat", "/api/")):
+        LATENCIES.append(time.monotonic() - now)
+    return response
 
 
 @app.post("/chat")
@@ -176,6 +252,13 @@ async def chat(req: LLMRequest) -> UnifiedResponse:
     if req.session_id:
         append(req.session_id, "user", req.message)
         append(req.session_id, "assistant", result.response)
+    record_event(
+        "route",
+        task=result.task_type,
+        expert=result.expert,
+        model=result.model,
+        chars=len(result.response),
+    )
     return result
 
 
@@ -236,6 +319,7 @@ async def chat_stream(req: LLMRequest) -> StreamingResponse:
                 if answer:
                     append(req.session_id, "user", req.message)
                     append(req.session_id, "assistant", answer)
+                    record_event("stream", task=task_type, expert=expert, model=model, chars=len(answer))
                     yield sse("done", {"chars": len(answer), "expert": expert, "model": model})
                     yield "data: [DONE]\n\n"
                     return
@@ -245,6 +329,7 @@ async def chat_stream(req: LLMRequest) -> StreamingResponse:
 
         # Fallback: buffered expert call, re-framed as SSE so framing stays valid.
         result = await chat(req)
+        record_event("route", task=result.task_type, expert=result.expert, model=result.model, chars=len(result.response), via="fallback")
         yield sse("meta", {"task_type": result.task_type, "expert": result.expert, "model": result.model, "source": "buffered"})
         yield sse("delta", {"text": result.response})
         yield sse("done", {"chars": len(result.response), "expert": result.expert, "model": result.model})
@@ -310,15 +395,137 @@ async def stack() -> dict[str, object]:
     return {"catalog": EXPERT_CATALOG, "services": services}
 
 
+@app.get("/api/diagnostics")
+async def diagnostics() -> dict[str, object]:
+    """Live stack telemetry for the console panels.
+
+    Aggregates: request metrics, per-expert health + latency, the inference
+    backend state (resident + installed models), memory size, and agent tools.
+    """
+    import time
+
+    out: dict[str, object] = {
+        "metrics": dict(METRICS),
+        "gateway": gateway_stats(),
+        "system": await read_system(),
+        "events": list(EVENTS)[:20],
+        "services": {},
+        "backend": {},
+        "memory": {},
+        "tools": [],
+    }
+
+    async with httpx.AsyncClient(timeout=2.5) as client:
+        for name, url in EXPERT_PORTS.items():
+            started = time.perf_counter()
+            try:
+                response = await client.get(f"{url}/health")
+                response.raise_for_status()
+                body: dict[str, object] = response.json()
+                body["latency_ms"] = int((time.perf_counter() - started) * 1000)
+            except httpx.HTTPError:
+                body = {"status": "unavailable", "service": name}
+            out["services"][name] = body
+
+        memory_url = SERVICE_URLS["memory"]
+        try:
+            response = await client.get(f"{memory_url}/health")
+            response.raise_for_status()
+            out["memory"] = response.json()
+        except httpx.HTTPError:
+            out["memory"] = {"status": "unavailable"}
+
+        agent_url = SERVICE_URLS["agent"]
+        try:
+            response = await client.get(f"{agent_url}/tools")
+            response.raise_for_status()
+            tools = response.json()
+            out["tools"] = tools.get("tools", tools) if isinstance(tools, dict) else tools
+        except httpx.HTTPError:
+            pass
+
+    ollama = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/")
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            resident = (await client.get(f"{ollama}/api/ps")).json()
+            installed = (await client.get(f"{ollama}/api/tags")).json()
+        out["backend"] = {
+            "url": ollama,
+            "reachable": True,
+            "resident": [
+                {
+                    "model": m.get("model"),
+                    "size": m.get("size"),
+                    "vram": m.get("size_vram"),
+                    "context": m.get("context"),
+                }
+                for m in resident if isinstance(m, dict)
+            ],
+            "installed": [
+                m.get("name") for m in installed.get("models", []) if isinstance(m, dict)
+            ],
+        }
+    except (httpx.HTTPError, ValueError):
+        out["backend"] = {"url": ollama, "reachable": False}
+    return out
+
+
 @app.post("/api/memory/add")
 async def memory_add(payload: dict) -> dict:
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(f"{SERVICE_URLS['memory']}/add", json=payload)
             response.raise_for_status()
-            return response.json()
+            body = response.json()
+            record_event("memory.write", chars=len(str(payload.get("text", ""))), detail=body.get("status", "ok"))
+            return body
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=503, detail="Memory service unavailable") from exc
+
+
+@app.post("/api/memory/search")
+async def memory_search(payload: dict) -> dict:
+    """Proxy a vector-store query so the console can probe FAISS directly."""
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(f"{SERVICE_URLS['memory']}/search", json=payload)
+            response.raise_for_status()
+            body = response.json()
+            record_event("memory.recall", hits=len(body.get("results", [])))
+            return body
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=503, detail="Memory service unavailable") from exc
+
+
+@app.get("/api/activity")
+async def activity() -> dict[str, object]:
+    """Live event feed + derived system alerts (all computed from real state)."""
+    gw = gateway_stats()
+    events = list(EVENTS)
+    alerts: list[dict[str, str]] = []
+    diag_services = {}
+    async with httpx.AsyncClient(timeout=2.0) as client:
+        for name, url in EXPERT_PORTS.items():
+            try:
+                response = await client.get(f"{url}/health")
+                response.raise_for_status()
+                diag_services[name] = "ok"
+            except httpx.HTTPError:
+                diag_services[name] = "down"
+    down = [name for name, status in diag_services.items() if status != "ok"]
+    if down:
+        alerts.append({"level": "warn", "text": f"Experts down: {', '.join(down)}"})
+    backend_url = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434")
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            resident = (await client.get(f"{backend_url}/api/ps")).json()
+        if not resident:
+            alerts.append({"level": "info", "text": "No models resident - first call pays cold-load time."})
+    except (httpx.HTTPError, ValueError):
+        alerts.append({"level": "error", "text": f"Inference backend unreachable at {backend_url}"})
+    if gw["errors_total"]:
+        alerts.append({"level": "warn", "text": f"{gw['errors_total']} gateway errors this uptime"})
+    return {"gateway": gw, "events": events, "alerts": alerts, "services": diag_services}
 
 
 @app.get("/")

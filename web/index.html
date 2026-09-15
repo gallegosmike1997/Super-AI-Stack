@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SUPER AI STACK — Local MoE Console</title>
 <style>
-:root{color-scheme:dark;--bg:#02040d;--panel:#070b19;--line:#1b2450;--cyan:#00e5ff;--violet:#8a2be2;--mag:#d946ef;--green:#20f59b;--ink:#eef3ff;--muted:#8ea0cf}
+:root{color-scheme:dark;--bg:#02040d;--panel:#070b19;--line:#1b2450;--cyan:#00e5ff;--violet:#8a2be2;--mag:#d946ef;--green:#20f59b;--ink:#eef3ff;--muted:#8ea0cf;--warn:#ffc857;--bad:#ff5c7a}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:15px 'Segoe UI',system-ui,sans-serif;background-image:linear-gradient(rgba(41,121,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(41,121,255,.06) 1px,transparent 1px),radial-gradient(circle at 50% 0%,rgba(138,43,226,.25),transparent 55%);background-size:32px 32px,32px 32px,100% 620px}
 .wrap{width:min(1240px,calc(100% - 24px));margin:0 auto;padding:14px 0 30px}
 .glass{background:linear-gradient(145deg,rgba(9,13,31,.94),rgba(3,5,14,.84));border:1px solid rgba(106,125,255,.25);border-radius:14px;box-shadow:0 18px 60px rgba(0,0,0,.38)}
@@ -20,76 +20,224 @@ nav.tabs button{background:transparent;border:1px solid transparent;color:#c6d2f
 nav.tabs button.on{background:rgba(138,43,226,.22);border-color:rgba(155,77,255,.55);color:#fff}
 .live{display:flex;align-items:center;gap:8px;font:700 11px ui-monospace,monospace;color:var(--green)}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+.dot.off{background:var(--bad);box-shadow:0 0 12px var(--bad)}
 .grid{display:grid;gap:12px;margin-top:12px}
+.cols2{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.cols3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
 @media(min-width:1000px){.cols{grid-template-columns:250px minmax(0,1fr) 300px}}
 .card{padding:14px}
 .card h3{margin:0 0 10px;font:700 11px Verdana,sans-serif;letter-spacing:.18em;color:var(--muted)}
 .bar{height:5px;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--mag))}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font:700 26px Verdana,sans-serif;letter-spacing:.02em}
+.stat b small{font:700 12px Verdana,sans-serif;color:var(--muted)}
+.stat span{font:10px ui-monospace,monospace;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.rowline{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px dashed rgba(107,125,255,.16);font-size:13px}
+.rowline:last-child{border-bottom:0}
+.rowline .k{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.pill{padding:2px 8px;border-radius:99px;border:1px solid var(--green);font:700 10px ui-monospace,monospace;color:var(--green);white-space:nowrap}
+.pill.off{border-color:var(--bad);color:var(--bad)}
+.pill.warn{border-color:var(--warn);color:var(--warn)}
+.pill.dim{border-color:var(--muted);color:var(--muted)}
+.meter{margin:8px 0}
+.meter .lab{display:flex;justify-content:space-between;font:700 10px ui-monospace,monospace;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+.meter .track{height:6px;border-radius:99px;background:#0a1030;border:1px solid var(--line);overflow:hidden}
+.meter .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--violet))}
+.evt{display:flex;gap:8px;align-items:baseline;padding:5px 0;border-bottom:1px dashed rgba(107,125,255,.14);font:12px ui-monospace,monospace}
+.evt .t{color:var(--muted);flex:0 0 auto}
+.evt .x{color:#c6d2f5;word-break:break-word}
+.evt.warn .x{color:var(--warn)}.evt.error .x{color:var(--bad)}.evt.ok .x{color:#b6ffe2}
+table.tbl{width:100%;border-collapse:collapse;font-size:12px}
+table.tbl th{font:700 10px ui-monospace,monospace;letter-spacing:.12em;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);text-transform:uppercase}
+table.tbl td{padding:6px 8px;border-bottom:1px dashed rgba(107,125,255,.14)}
+.layer{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:rgba(10,16,48,.45)}
+.layer h4{margin:0 0 3px;font:700 12px Verdana,sans-serif;letter-spacing:.08em}
+.layer h4 em{font:700 11px ui-monospace,monospace;color:var(--mag);font-style:normal;margin-right:8px}
+.layer p{margin:0;font-size:12px;color:var(--muted);line-height:1.5}
 .msg{padding:10px 12px;border-radius:10px;border:1px solid var(--line);white-space:pre-wrap;position:relative;line-height:1.55}
 .msg.u{background:#231a45;margin-left:12%}
 .msg.a{background:#0d1326;border-left:3px solid var(--cyan)}
-.msg.err{background:#2a0f1a;border-left:3px solid #ff5c7a;color:#ffd7e0}
+.msg.err{background:#2a0f1a;border-left:3px solid var(--bad);color:#ffd7e0}
 .badge{position:absolute;top:-9px;right:10px;background:#0a1030;border:1px solid var(--violet);border-radius:99px;padding:2px 9px;font:700 10px ui-monospace,monospace;letter-spacing:.06em;color:#d9c6ff}
 .badge.live{border-color:var(--green);color:#b6ffe2}
 .code{background:#04071a;border:1px solid var(--line);border-radius:8px;padding:10px;margin:8px 0;overflow:auto;white-space:pre;font:12px ui-monospace,monospace;color:#c9e8ff}
 .cursor{display:inline-block;width:7px;height:14px;background:var(--cyan);margin-left:2px;vertical-align:-2px;animation:blink 1s steps(2,start) infinite}
 @keyframes blink{to{visibility:hidden}}
-.pill{padding:2px 8px;border-radius:99px;border:1px solid var(--green);font:700 10px ui-monospace,monospace;color:var(--green)}
-.pill.off{border-color:#ff5c7a;color:#ff5c7a}
+input,textarea{background:#050816;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px;font:14px 'Segoe UI',sans-serif}
+button.act{background:linear-gradient(135deg,rgba(0,229,255,.16),rgba(138,43,226,.28));border:1px solid var(--violet);border-radius:9px;color:#fff;font:700 11px Verdana,sans-serif;letter-spacing:.1em;padding:9px 14px;cursor:pointer}
+img.art{width:100%;border-radius:10px;border:1px solid var(--line)}
+.mono{font:12px ui-monospace,monospace}
+.dimtxt{color:var(--muted);font-size:12px;line-height:1.6}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="glass top"><div class="brand"><img src="/assets/SAS%20LOGO.png" alt="SAS logo" onerror="this.style.display='none'"><div><h1>SUPER <span>AI</span> STACK</h1><p>Local MoE console</p></div></div><nav class="tabs" id="tabs"><button class="on" data-view="dashboard">DASHBOARD</button><button data-view="stack">STACK</button><button data-view="models">MODELS</button><button data-view="memory">MEMORY</button><button data-view="activity">ACTIVITY</button></nav><div class="live"><span class="dot"></span><span id="health">checking</span></div></header>
+<header class="glass top">
+<div class="brand"><img src="/assets/SAS%20LOGO.png" alt="SAS logo" onerror="this.style.display='none'"><div><h1>SUPER <span>AI</span> STACK</h1><p>Local MoE console</p></div></div>
+<nav class="tabs" id="tabs">
+<button data-view="dashboard" class="on">DASHBOARD</button>
+<button data-view="stack">STACK</button>
+<button data-view="models">MODELS</button>
+<button data-view="memory">MEMORY</button>
+<button data-view="activity">ACTIVITY</button>
+<button data-view="concept">CONCEPT</button>
+</nav>
+<div class="live"><span class="dot" id="livedot"></span><span id="livetxt">LIVE</span></div>
+</header>
 <section class="grid cols" id="view-dashboard">
-<aside class="glass card"><h3>System status</h3><div class="bar"></div><p id="sys" style="color:var(--muted);font-size:12px">Probing gateway + experts…</p><img src="/assets/SAS%20Dashboard.png" alt="SAS dashboard" style="width:100%;border-radius:10px;border:1px solid var(--line)" onerror="this.style.display='none'"></aside>
-<div class="glass card"><h3>Unified chat — router decides the expert</h3><div id="thread" style="display:flex;flex-direction:column;gap:10px;min-height:260px" aria-live="polite"></div><form id="chat"><textarea id="msg" rows="3" placeholder="Ask anything: chat, code, reasoning, vision, audio, image…" style="width:100%;background:#050816;border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:10px"></textarea><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center"><label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="mem"> use memory</label><input type="file" id="file" accept="image/*,audio/*"><input id="apikey" placeholder="x-api-key (if set)" style="background:#050816;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px;min-width:170px"><button>Send</button><span id="route" style="font-size:12px;color:var(--cyan)"></span></div></form></div>
-<aside class="glass card"><h3>Live stack</h3><div id="mini"></div><img src="/assets/SAS%20Concept.png" alt="SAS concept" style="width:100%;margin-top:10px;border-radius:10px" onerror="this.style.display='none'"></aside>
+  <aside class="glass card" style="display:flex;flex-direction:column;gap:10px">
+    <h3>Stack status</h3><div id="rail" class="dimtxt">polling…</div>
+    <h3 style="margin-top:6px">Backend</h3><div id="railbackend" class="dimtxt">polling…</div>
+    <img class="art" src="/assets/SAS%20Concept.png" alt="SAS concept" onerror="this.style.display='none'">
+  </aside>
+  <div class="glass card">
+    <h3>Unified chat — router decides the expert</h3>
+    <div id="thread" style="display:flex;flex-direction:column;gap:10px;min-height:280px" aria-live="polite"></div>
+    <form id="chat" style="margin-top:10px">
+      <textarea id="msg" rows="3" placeholder="Ask anything: chat, code, reasoning, vision, audio, image…" style="width:100%"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">
+        <label style="font-size:12px;color:var(--muted);display:flex;gap:5px;align-items:center"><input type="checkbox" id="mem" style="width:auto"> use memory</label>
+        <input type="file" id="file" accept="image/*,audio/*" style="width:auto;max-width:190px">
+        <input id="apikey" placeholder="x-api-key (if set)" style="min-width:150px">
+        <button class="act" type="submit">SEND</button>
+        <span id="route" class="mono" style="color:var(--cyan)"></span>
+      </div>
+    </form>
+  </div>
+  <aside class="glass card" style="display:flex;flex-direction:column;gap:10px">
+    <h3>Telemetry</h3>
+    <div class="grid cols2" style="gap:10px">
+      <div class="stat"><b id="t-req">–</b><span>requests</span></div>
+      <div class="stat"><b id="t-err">–</b><span>errors</span></div>
+      <div class="stat"><b id="t-stream">–</b><span>streams</span></div>
+      <div class="stat"><b id="t-tools">–</b><span>tools</span></div>
+    </div>
+    <h3 style="margin-top:6px">Memory</h3><div id="railmemory" class="dimtxt">polling…</div>
+    <h3 style="margin-top:6px">Session</h3><div id="sess" class="dimtxt">Send a chat message to open a session trace.</div>
+  </aside>
 </section>
-<section class="grid cols" id="view-stack" hidden><div class="glass card"><h3>Pipeline</h3><p style="color:var(--muted);font-size:13px;line-height:1.7">client → gateway → router (Phi-3) → memory (FAISS) → expert<br>expert → router merge → reasoning polish → one answer</p><img src="/assets/SAS%20Stack.png" alt="SAS stack" style="width:100%;border-radius:10px" onerror="this.style.display='none'"></div><div class="glass card"><h3>Model table</h3><div id="catalog" style="font-size:13px"></div></div><div class="glass card"><h3>Palette</h3><img src="/assets/SAS%20Identity%20Pallete.png" alt="SAS palette" style="width:100%;border-radius:10px" onerror="this.style.display='none'"></div></section>
-<section class="grid cols" id="view-models" hidden><div class="glass card"><h3>Vision + memory</h3><img src="/assets/SAS%20Models.png" alt="SAS models" style="width:100%;border-radius:10px" onerror="this.style.display='none'"><img src="/assets/SAS%20Memory.png" alt="SAS memory" style="width:100%;border-radius:10px;margin-top:8px" onerror="this.style.display='none'"></div><div class="glass card"><h3>Expert health</h3><div id="health2" style="font-size:13px"></div></div><div class="glass card"><h3>Generation</h3><div id="gen"></div><img src="/assets/DB%20Navbar.png" alt="SAS nav" style="width:100%;border-radius:10px;margin-top:8px" onerror="this.style.display='none'"></div></section>
-<section class="grid cols" id="view-memory" hidden><div class="glass card"><h3>Add memory</h3><textarea id="memtext" rows="4" style="width:100%;background:#050816;border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:10px" placeholder="Paste durable knowledge…"></textarea><button id="memadd" style="margin-top:8px">Store in FAISS</button><p id="memout" style="font-size:12px;color:var(--green)"></p></div><div class="glass card"><h3>Session</h3><div id="sess" style="font-size:12px;color:var(--muted)">Send a chat message to open a session trace.</div></div><div class="glass card"><h3>Streams</h3><img src="/assets/SAS%20Activity.png" alt="SAS activity" style="width:100%;border-radius:10px" onerror="this.style.display='none'"></div></section>
-<section class="grid" id="view-activity" hidden><div class="glass card"><h3>Activity</h3><div id="log" style="font:12px ui-monospace,monospace;color:var(--muted)">Boot log ready.</div></div></section>
-</div>
-<script>
-const $=s=>document.querySelector(s);const thread=$('#thread'),log=$('#log'),route=$('#route'),session=crypto.randomUUID();
+<section class="grid cols3" id="view-stack" hidden>
+  <div class="glass card">
+    <h3>Pipeline</h3>
+    <p class="dimtxt">client → gateway → router (Phi-3) → memory (FAISS) → expert<br>expert → router merge → reasoning polish → one answer</p>
+    <div id="pipeline" style="margin-top:8px"></div>
+  </div>
+  <div class="glass card">
+    <h3>Model table</h3>
+    <table class="tbl" id="catalog"><thead><tr><th>Layer</th><th>Model</th><th>Purpose</th><th>State</th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="glass card">
+    <h3>Routing config</h3><div id="routing" class="dimtxt">polling…</div>
+    <img class="art" style="margin-top:8px" src="/assets/SAS%20Stack.png" alt="SAS stack" onerror="this.style.display='none'">
+  </div>
+</section>
+<section class="grid cols3" id="view-models" hidden>
+  <div class="glass card">
+    <h3>Expert health</h3>
+    <table class="tbl" id="healthtbl"><thead><tr><th>Expert</th><th>Model</th><th>Backend</th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="glass card">
+    <h3>Inference backend</h3><div id="backend" class="dimtxt">polling…</div>
+    <div class="meter" id="residentmeter" hidden><div class="lab"><span>RESIDENT MODELS</span><span id="residentnum"></span></div><div class="track"><div class="fill" id="residentfill"></div></div></div>
+    <img class="art" style="margin-top:8px" src="/assets/SAS%20Models.png" alt="SAS models" onerror="this.style.display='none'">
+  </div>
+  <div class="glass card">
+    <h3>Generation</h3><div id="gen" class="dimtxt">Images produced by the image expert appear here.</div>
+    <img class="art" style="margin-top:8px" src="/assets/DB%20Navbar.png" alt="SAS nav" onerror="this.style.display='none'">
+  </div>
+</section>
+<section class="grid cols" id="view-memory" hidden>
+  <div class="glass card">
+    <h3>Add memory</h3>
+    <textarea id="memtext" rows="4" style="width:100%" placeholder="Paste durable knowledge…"></textarea>
+    <button class="act" id="memadd" style="margin-top:8px">STORE IN FAISS</button>
+    <p id="memout" class="mono" style="color:var(--green)"></p>
+  </div>
+  <div class="glass card">
+    <h3>Search memory</h3>
+    <div style="display:flex;gap:8px"><input id="memq" placeholder="query…" style="flex:1"><button class="act" id="memsearch">FIND</button></div>
+    <div id="memhits" class="dimtxt" style="margin-top:8px"></div>
+  </div>
+  <div class="glass card">
+    <h3>Session trace</h3><div id="sess2" class="dimtxt">Send a chat message to open a session trace.</div>
+    <img class="art" style="margin-top:8px" src="/assets/SAS%20Memory.png" alt="SAS memory" onerror="this.style.display='none'">
+  </div>
+</section>
+<section class="grid" id="view-activity" hidden>
+  <div class="glass card">
+    <h3>Activity system</h3><div id="events" class="dimtxt">No events yet.</div>
+  </div>
+  <div class="glass card">
+    <h3>System log</h3><div id="log" class="mono" style="color:var(--muted)">Boot log ready.</div>
+    <img class="art" style="margin-top:8px" src="/assets/SAS%20Activity.png" alt="SAS activity" onerror="this.style.display='none'">
+  </div>
+</section>
+<section class="grid cols3" id="view-concept" hidden>
+  <div class="glass card">
+    <h3>Concept stack</h3>
+    <div id="concepts" class="dimtxt">polling…</div>
+  </div>
+  <div class="glass card">
+    <h3>Architecture vision</h3>
+    <img class="art" src="/assets/SAS%20Concept.png" alt="SAS concept" onerror="this.style.display='none'">
+  </div>
+  <div class="glass card">
+    <h3>Identity</h3>
+    <img class="art" src="/assets/SAS%20Identity%20Pallete.png" alt="SAS palette" onerror="this.style.display='none'">
+    <img class="art" style="margin-top:8px" src="/assets/SAS%20Dashboard.png" alt="SAS dashboard" onerror="this.style.display='none'">
+  </div>
+</section>
+</div><script>
+const $=s=>document.querySelector(s);
+const thread=$('#thread'),log=$('#log'),route=$('#route'),session=crypto.randomUUID();
 const key=()=>($('#apikey').value||'').trim();
 const hdr=()=>key()?{'content-type':'application/json','x-api-key':key()}:{'content-type':'application/json'};
-const esc=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function md(t){
-  const out=[];t.split('```').forEach((b,i)=>{
-    if(i%2)out.push('<pre class="code">'+esc(b.replace(/^[a-zA-Z0-9_+.-]*\n/,''))+'</pre>');
-    else out.push(esc(b).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\n/g,'<br>'));
-  });
-  return out.join('');
-}
-const say=(t,c)=>{const d=document.createElement('div');d.className='msg '+(c==='u'?'u':c==='e'?'err':'a');if(c==='a'&&t) d.innerHTML=md(t);else d.textContent=t;thread.append(d);d.scrollIntoView({block:'nearest',behavior:'smooth'});return d};
-function paint(el,t,live){el.innerHTML=md(t)+(live?'<span class="cursor"></span>':'')}
+const esc=t=>String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function md(t){const out=[];String(t).split('```').forEach((b,i)=>{if(i%2)out.push('<pre class="code">'+esc(b.replace(/^[a-zA-Z0-9_+.-]*\n/,''))+'</pre>');else out.push(esc(b).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\n/g,'<br>'))});return out.join('')}
+const say=(t,c)=>{const d=document.createElement('div');d.className='msg '+(c==='u'?'u':c==='e'?'err':'a');if(c==='a'&&t)d.innerHTML=md(t);else d.textContent=t;thread.append(d);d.scrollIntoView({block:'nearest',behavior:'smooth'});return d};
+const paint=(el,t,live)=>{el.innerHTML=md(t)+(live?'<span class="cursor"></span>':'')};
 function badge(el,text,live){let b=el.querySelector('.badge');if(!b){b=document.createElement('span');b.className='badge';el.prepend(b)}b.textContent=text;b.classList.toggle('live',!!live)}
 const note=t=>{log.innerHTML+='<br>'+new Date().toLocaleTimeString()+' '+t};
-async function sse(res,onFrame){
-  const rd=res.body.getReader(),dc=new TextDecoder();let buf='';
-  for(;;){
-    const {value,done}=await rd.read();if(done)break;
-    buf+=dc.decode(value,{stream:true});
-    let cut;
-    while((cut=buf.indexOf('\n\n'))>=0){
-      const raw=buf.slice(0,cut);buf=buf.slice(cut+2);
-      let ev='message';const data=[];
-      raw.split('\n').forEach(line=>{
-        if(line.startsWith('event:'))ev=line.slice(6).trim();
-        else if(line.startsWith('data:'))data.push(line.slice(5).replace(/^ /,''));
-      });
-      if(data.length)onFrame(ev,data.join('\n'));
-    }
-  }
+async function sse(res,onFrame){const rd=res.body.getReader(),dc=new TextDecoder();let buf='';for(;;){const {value,done}=await rd.read();if(done)break;buf+=dc.decode(value,{stream:true});let cut;while((cut=buf.indexOf('\n\n'))>=0){const raw=buf.slice(0,cut);buf=buf.slice(cut+2);let ev='message';const data=[];raw.split('\n').forEach(line=>{if(line.startsWith('event:'))ev=line.slice(6).trim();else if(line.startsWith('data:'))data.push(line.slice(5).replace(/^ /,''))});if(data.length)onFrame(ev,data.join('\n'))}}}
+const read=f=>new Promise(r=>{if(!f)return r(null);const x=new FileReader();x.onload=()=>r({kind:f.type.startsWith('image/')?'image':'audio',content_type:f.type,uri:x.result});x.readAsDataURL(f)});
+const pill=s=>'<span class="pill '+(s==='ok'?'':'off')+'">'+esc(s)+'</span>';
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');['dashboard','stack','models','memory','activity','concept'].forEach(v=>$('#view-'+v).hidden=v!==b.dataset.view);note('view='+b.dataset.view)});
+async function api(path,opts){const r=await fetch(path,Object.assign({headers:key()?{'x-api-key':key()}:{}},opts||{}));if(!r.ok)throw new Error(path+' '+r.status);return r.json()}
+function stateOf(svc){if(!svc||svc.status!=='ok')return {cls:'off',txt:'down'};return svc.backend==='configured'?{cls:'',txt:'live'}:{cls:'warn',txt:'stub'}}
+</script><script>
+function renderStack(d){
+  const cat=d.catalog||[],svcs=d.services||{};
+  const tb=$('#catalog tbody');tb.innerHTML=cat.map(c=>{const st=stateOf(svcs[c.expert]);return '<tr><td>'+esc(c.layer)+'</td><td>'+esc(c.model)+'</td><td>'+esc(c.purpose)+'</td><td>'+pill(st.txt)+'</td></tr>'}).join('');
+  $('#pipeline').innerHTML=cat.map((c,i)=>'<div class="layer"><h4><em>'+String(i+1).padStart(2,'0')+'</em>'+esc(c.layer)+' · '+esc(c.expert)+'</h4><p>'+esc(c.purpose)+' — model <b style="color:#c9e8ff">'+esc(c.model)+'</b> '+pill(stateOf(svcs[c.expert]).txt)+'</p></div>').join('');
+  const okN=cat.filter(c=>svcs[c.expert]&&svcs[c.expert].status==='ok').length;
+  $('#rail').innerHTML=cat.map(c=>'<div class="rowline"><span class="k">'+esc(c.expert)+'</span>'+pill(stateOf(svcs[c.expert]).txt)+'</div>').join('')+'<div class="rowline"><span class="k">healthy</span><b>'+okN+'/'+cat.length+'</b></div>';
+  $('#livedot').className='dot'+(okN===cat.length?'':' off');$('#livetxt').textContent=okN===cat.length?'ALL SYSTEMS LIVE':okN+'/'+cat.length+' UP';
+  $('#concepts').innerHTML=cat.map(c=>'<div class="layer"><h4><em>◆</em>'+esc(c.layer)+'</h4><p>'+esc(c.purpose)+'</p></div>').join('');
 }
-document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');['dashboard','stack','models','memory','activity'].forEach(v=>$('#view-'+v).hidden=v!==b.dataset.view)});
-async function stack(){try{const o={headers:key()?{'x-api-key':key()}:{}};const r=await fetch('/api/stack',{headers:o.headers});const j=await r.json();$('#catalog').innerHTML=j.catalog.map(c=>'<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #273052"><span>'+c.layer+' → '+c.expert+'</span><b style="color:var(--cyan)">'+c.model+'</b></div>').join('');$('#mini').innerHTML=j.catalog.map(c=>'<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0"><span>'+c.layer+'</span><span>'+(j.services[c.expert]&&j.services[c.expert].status==='ok'?'🟢':'🔴')+'</span></div>').join('');$('#health2').innerHTML=Object.entries(j.services).map(([k,v])=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0"><span>'+k+'</span><span style="color:var(--muted);font-size:11px">'+(v.model||'')+'</span><span class="pill'+(v.backend==='configured'?'':' off')+'">'+(v.backend||v.status||'?')+'</span></div>').join('');$('#sys').textContent='Gateway online. '+j.catalog.length+' experts catalogued.';$('#health').textContent='online';}catch(e){$('#health').textContent='offline';$('#sys').textContent='Gateway unreachable.'}}
-stack();setInterval(stack,15000);
-const read=f=>new Promise(r=>{if(!f)return r(null);const x=new FileReader();x.onload=()=>r({kind:f.type.startsWith('image/')?'image':'audio',uri:x.result,content_type:f.type});x.readAsDataURL(f)});
-let streaming=false;
-function setBusy(b,m){streaming=b;document.querySelector('#chat button').disabled=b;document.querySelector('#chat button').textContent=b?(m||'Streaming…'):'Send'}
+function renderDiag(d){
+  const m=d.metrics||{};$('#t-req').textContent=m.requests_total??'0';$('#t-err').textContent=m.errors_total??'0';$('#t-stream').textContent=m.stream_requests_total??'0';
+  const tools=d.tools||[];$('#t-tools').textContent=tools.length;
+  const svcs=d.services||{};
+  $('#healthtbl tbody').innerHTML=Object.keys(svcs).map(n=>{const s=svcs[n],st=stateOf(s);return '<tr><td>'+esc(n)+'</td><td>'+esc((s&&s.model)||'—')+'</td><td>'+pill(st.txt)+(s&&s.latency_ms!=null?' <span class="mono" style="color:var(--muted)">'+s.latency_ms+'ms</span>':'')+'</td></tr>'}).join('');
+  const b=d.backend||{};let bh='<div class="rowline"><span class="k">url</span><span class="mono">'+esc(b.url||'—')+'</span></div><div class="rowline"><span class="k">reachable</span>'+pill(b.reachable?'ok':'off')+'</div>';
+  const inst=b.installed||[];bh+='<div class="rowline"><span class="k">installed</span><b>'+(b.reachable?inst.length:'—')+'</b></div>';
+  (b.resident||[]).forEach(r=>{bh+='<div class="rowline"><span class="k">resident</span><span class="mono">'+esc(r.model||'?')+' · '+esc(r.context||'?')+' ctx</span></div>'});
+  $('#backend').innerHTML=bh;
+  const rm=$('#residentmeter');if(b.reachable){rm.hidden=false;const n=(b.resident||[]).length;$('#residentnum').textContent=n+'/1';$('#residentfill').style.width=Math.min(100,n*50)+'%'}
+  const mem=d.memory||{},memOk=mem.status==='ok';
+  $('#railmemory').innerHTML='<div class="rowline"><span class="k">faiss</span>'+pill(memOk?'ok':'off')+'</div><div class="rowline"><span class="k">documents</span><b>'+(memOk?(mem.documents??'0'):'—')+'</b></div>';
+  $('#railbackend').innerHTML='<div class="rowline"><span class="k">backend</span>'+pill(b.reachable?'ok':'off')+'</div><div class="rowline"><span class="k">models</span><b>'+(b.reachable?inst.length:'—')+'</b></div>';
+}
+function renderActivity(d){
+  const det=e=>Object.entries(e).filter(([k])=>!['type','at','ts','time'].includes(k)).map(([k,v])=>k+'='+v).join(' ');
+  $('#events').innerHTML=(d.alerts||[]).map(a=>'<div class="evt '+(a.level==='error'?'error':a.level==='warn'?'warn':'ok')+'"><span class="t">[ALERT]</span><span class="x">'+esc(a.text)+'</span></div>').join('')+(d.events||[]).slice().reverse().map(e=>'<div class="evt ok"><span class="t">'+esc(e.at||e.ts||e.time||'')+'</span><span class="x">'+esc(e.type||'event')+(det(e)?' — '+esc(det(e)):'')+'</span></div>').join('')||'<p>No events yet.</p>';
+}
+async function stack(){try{renderStack(await api('/api/stack'))}catch(e){note('stack poll failed: '+e.message)}}
+async function diag(){try{renderDiag(await api('/api/diagnostics'))}catch(e){note('diagnostics poll failed: '+e.message)}}
+async function act(){try{renderActivity(await api('/api/activity'))}catch(e){note('activity poll failed: '+e.message)}}
+</script><script>
+let streaming=false,ctl=null;
+function setBusy(b,m){streaming=b;document.querySelector('#chat button').disabled=b;document.querySelector('#chat button').textContent=b?(m||'Streaming…'):'SEND'}
 $('#chat').addEventListener('submit',async e=>{
   e.preventDefault();
   if(streaming)return;
@@ -99,28 +247,19 @@ $('#chat').addEventListener('submit',async e=>{
   say(text||file.name,'u');
   const a=say('routing…','a');
   const at=await read(file);
-  const ctl=new AbortController();
+  ctl=new AbortController();
   setBusy(true,'Routing…');
   try{
     const body={message:text,session_id:session,attachments:at?[at]:[],metadata:{use_memory:$('#mem').checked}};
     if(at){
-      // Attachments go through the buffered endpoint (vision / speech experts).
       const res=await fetch('/chat',{method:'POST',headers:hdr(),body:JSON.stringify(body),signal:ctl.signal});
       if(!res.ok)throw new Error('gateway '+res.status);
       const j=await res.json();
       paint(a,j.response,false);
-      badge(a,j.expert+' · '+j.model,false);
-      route.innerHTML='<span class="pill">'+j.task_type+'</span> '+j.expert+' · '+j.model;
+      badge(a,(j.expert||'?')+' · '+(j.model||'?'),false);
+      route.innerHTML='<span class="pill">'+esc(j.task_type||'chat')+'</span> '+esc(j.expert||'?')+' · '+esc(j.model||'?');
       note('route='+j.task_type+' expert='+j.expert+' model='+j.model);
-      (j.artifacts||[]).forEach(x=>{
-        if(x.type==='image'&&x.data){
-          const im=document.createElement('img');
-          im.src='data:'+(x.mime_type||'image/png')+';base64,'+x.data;
-          im.style.width='100%';im.style.marginTop='8px';
-          a.append(im);
-          const g=$('#gen');g.innerHTML='';g.append(im.cloneNode(true));
-        }
-      });
+      (j.artifacts||[]).forEach(x=>{if(x.type==='image'&&x.data){const im=document.createElement('img');im.src='data:'+(x.mime_type||'image/png')+';base64,'+x.data;im.style.width='100%';im.style.marginTop='8px';a.append(im);const g=$('#gen');g.innerHTML='';g.append(im.cloneNode(true))}});
     }else{
       const res=await fetch('/chat/stream',{method:'POST',headers:hdr(),body:JSON.stringify(body),signal:ctl.signal});
       if(!res.ok)throw new Error('gateway '+res.status);
@@ -131,16 +270,12 @@ $('#chat').addEventListener('submit',async e=>{
       try{
         await sse(res,(ev,data)=>{
           if(data==='[DONE]')return;
-          let j=null;try{j=JSON.parse(data)}catch(_){j=null}
-          if(ev==='meta'&&j){
-            badge(a,j.expert+' · '+j.model,true);
-            route.innerHTML='<span class="pill">'+j.task_type+'</span> '+j.expert+' · '+j.model+' <span style="color:var(--muted)">('+j.source+')</span>';
-            note('route='+j.task_type+' expert='+j.expert+' model='+j.model+' source='+j.source);
-            return;
-          }
-          if(ev==='error'&&j){note('stream error: '+j.detail);route.innerHTML='<span class="pill off">fallback</span> '+j.detail;return}
-          if(ev==='done'&&j){badge(a,j.expert+' · '+j.model,false);note('stream done ('+j.chars+' chars)');return}
-          if(ev==='delta'&&j){answer+=j.text;paint(a,answer,true);a.scrollIntoView({block:'nearest'})}
+          let j=null;try{j=JSON.parse(data)}catch(_){}
+          if(!j)return;
+          if(ev==='meta'){badge(a,j.expert+' · '+j.model,true);route.innerHTML='<span class="pill">'+esc(j.task_type)+'</span> '+esc(j.expert)+' · '+esc(j.model)+' <span style="color:var(--muted)">('+esc(j.source)+')</span>';note('route='+j.task_type+' expert='+j.expert+' model='+j.model+' source='+j.source);return}
+          if(ev==='error'){note('stream error: '+j.detail);route.innerHTML='<span class="pill off">fallback</span> '+esc(j.detail);return}
+          if(ev==='done'){badge(a,j.expert+' · '+j.model,false);note('stream done ('+j.chars+' chars)');return}
+          if(ev==='delta'){answer+=j.text;paint(a,answer,true);a.scrollIntoView({block:'nearest'})}
         });
       }catch(ab){note('stream stopped by user')}
       document.removeEventListener('keydown',stop);
@@ -148,7 +283,7 @@ $('#chat').addEventListener('submit',async e=>{
       route.innerHTML+=' <span style="color:var(--muted)">· '+answer.length+' chars</span>';
     }
     const s=await fetch('/sessions/'+session,{headers:key()?{'x-api-key':key()}:{}}).then(r=>r.json()).catch(()=>null);
-    if(s)$('#sess').textContent=s.messages.slice(-8).join('\n');
+    if(s){const t=s.messages.slice(-8).join('\n');$('#sess').textContent=t;$('#sess2').textContent=t}
   }catch(err){
     a.className='msg err';
     a.textContent='Stack unavailable: '+((err&&err.message)||'start gateway + router + experts.');
@@ -157,9 +292,24 @@ $('#chat').addEventListener('submit',async e=>{
   }
   setBusy(false);
   $('#file').value='';
-});$('#msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();document.querySelector('#chat button').click()}});
-$('#memadd').onclick=async()=>{const t=$('#memtext').value.trim();if(!t)return;const r=await fetch('/api/memory/add',{method:'POST',headers:hdr(),body:JSON.stringify({text:t})});$('#memout').textContent=r.ok?'Stored in FAISS.':'Memory service unavailable.'};
+});
+$('#msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();document.querySelector('#chat button').click()}});
+$('#memadd').onclick=async()=>{
+  const t=$('#memtext').value.trim();if(!t)return;
+  $('#memout').textContent='storing…';
+  try{const j=await api('/api/memory/add',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text:t})});$('#memout').textContent='stored ✓ '+(j.status||'');$('#memtext').value='';note('memory stored');diag()}
+  catch(e){$('#memout').textContent='store failed: '+e.message}
+};
+$('#memsearch').onclick=async()=>{
+  const q=$('#memq').value.trim();if(!q)return;
+  $('#memhits').textContent='searching…';
+  try{const j=await api('/api/memory/search',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({query:q})});const rs=j.results||[];$('#memhits').innerHTML=rs.length?rs.map((r,i)=>'<div class="layer"><p><b style="color:#c9e8ff">#'+(i+1)+'</b> '+esc(String(r).slice(0,220))+'</p></div>').join(''):'<p>No matches.</p>';note('memory search: '+rs.length+' hits')}
+  catch(e){$('#memhits').textContent='search failed: '+e.message}
+};
+stack();diag();act();
+setInterval(()=>{stack();diag()},15000);
+setInterval(act,20000);
+note('console boot complete — session '+session.slice(0,8));
 </script>
 </body>
 </html>
-
