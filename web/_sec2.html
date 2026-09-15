@@ -1,0 +1,76 @@
+<section class="grid cols" id="view-memory" hidden>
+  <div class="glass card" style="grid-column:1/-1">
+    <h3>REAL-TIME MEMORY STREAMS</h3>
+    <p class="dimtxt">Live activity across memory channels and context layers.</p>
+    <div style="margin-top:6px"><span class="chip on">● LIVE</span><span class="chip" id="chipdocs">docs –</span><span class="chip" id="chipev">events –</span></div>
+    <div class="grid cols2" style="gap:8px;margin-top:8px" id="mstats"></div>
+  </div>
+  <div class="glass card">
+    <h3>MEMORY LAYER STATUS</h3><div id="layerstatus" class="dimtxt">polling…</div>
+    <h3 style="margin-top:8px">LIVE STREAMS</h3><div id="streams" class="dimtxt">polling…</div>
+  </div>
+  <div class="glass card">
+    <h3>Add memory</h3>
+    <textarea id="memtext" rows="4" style="width:100%" placeholder="Paste durable knowledge…"></textarea>
+    <button class="act" id="memadd" style="margin-top:8px">STORE IN FAISS</button>
+    <p id="memout" class="mono" style="color:var(--green)"></p>
+    <h3 style="margin-top:8px">Search memory</h3>
+    <div style="display:flex;gap:8px"><input id="memq" placeholder="query…" style="flex:1"><button class="act" id="memsearch">FIND</button></div>
+    <div id="memhits" class="dimtxt" style="margin-top:8px"></div>
+  </div>
+  <div class="glass card">
+    <h3>Session trace</h3><div id="sess2" class="dimtxt">Send a chat message to open a session trace.</div>
+    <img class="art" style="margin-top:8px" src="/assets/SAS%20Memory.png" alt="SAS memory" onerror="this.style.display='none'">
+  </div>
+</section>
+<section class="grid cols3" id="view-activity" hidden>
+  <div class="glass card">
+    <h3>SYSTEM METRICS</h3><div id="sysbars" class="dimtxt">polling…</div>
+    <div class="grid cols2" style="gap:8px;margin-top:8px">
+      <div class="stat"><b id="p95">–</b><span>latency p95</span></div>
+      <div class="stat"><b id="qdepth">–</b><span>queue depth</span></div>
+    </div>
+  </div>
+  <div class="glass card">
+    <h3>CORE STATUS</h3><div id="corelist" class="dimtxt">polling…</div>
+  </div>
+  <div class="glass card">
+    <h3>ALERTS</h3><div id="alertfeed" class="dimtxt">No alerts.</div>
+  </div>
+  <div class="glass card" style="grid-column:1/-1">
+    <h3>Activity system</h3><div id="events" class="dimtxt">No events yet.</div>
+    <h3 style="margin-top:8px">System log</h3><div id="log" class="mono" style="color:var(--muted)">Boot log ready.</div>
+    <img class="art" style="margin-top:8px" src="/assets/SAS%20Activity.png" alt="SAS activity" onerror="this.style.display='none'">
+  </div>
+</section>
+<section class="grid cols3" id="view-concept" hidden>
+  <div class="glass card">
+    <h3>CONCEPT STACK</h3>
+    <div id="concepts" class="dimtxt">polling…</div>
+  </div>
+  <div class="glass card">
+    <h3>POWERED BY SUPER AI OS</h3>
+    <div class="hexwrap">
+      <div class="hex">S</div>
+      <div class="sat"><span>MEMORY</span><span>REASONING</span><span>PLANNING</span><span>LEARNING</span><span>PERCEPTION</span><span>TOOLS</span></div>
+    </div>
+    <div class="pyr">
+      <div>8 · SUPER AI AGENTS</div>
+      <div>7 · APPLICATION LAYER</div>
+      <div>6 · ORCHESTRATION</div>
+      <div>5 · MODEL LAYER</div>
+      <div>4 · DATA LAYER</div>
+      <div>3 · INFRASTRUCTURE</div>
+      <div>2 · TOOLING</div>
+      <div>1 · FOUNDATION</div>
+    </div>
+  </div>
+  <div class="glass card">
+    <h3>BUILT FOR THE FUTURE</h3>
+    <p class="dimtxt">Modular. Scalable. Limitless.</p>
+    <p style="font-size:40px;color:var(--cyan);margin:6px 0">∞</p>
+    <img class="art" src="/assets/SAS%20Concept.png" alt="SAS concept" onerror="this.style.display='none'">
+    <img class="art" style="margin-top:8px" src="/assets/SAS%20Identity%20Pallete.png" alt="SAS palette" onerror="this.style.display='none'">
+    <img class="art" style="margin-top:8px" src="/assets/SAS%20Dashboard.png" alt="SAS dashboard" onerror="this.style.display='none'">
+  </div>
+</section>

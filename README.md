@@ -1,4 +1,4 @@
-﻿# Super AI Stack
+﻿n a test version# Super AI Stack
 
 Super AI Stack presents one API while coordinating specialized local and remote experts:
 
@@ -72,46 +72,3 @@ docker compose -f infra/docker-compose.yml up -d
 ```
 
 Use `CODING_MODEL_BASE_URL` and `CODING_MODEL_NAME` for a separate coding model. The same variables work with vLLM or a hosted provider; set `MODEL_API_KEY` when required.
-
-When a model call fails, experts no longer echo the prompt back as if it were an answer. They return an explicit notice naming the expert, the requested model, and whether `MODEL_BASE_URL` is set or the call failed. `GET /health` reports `"backend": "configured"` or `"offline"` per expert so the console can show real state.
-
-## Test the whole stack locally
-
-`scripts/smoke_local.sh` starts all ten services against an isolated state directory (`/tmp/sas-test`), so it never touches production data:
-
-```bash
-bash scripts/smoke_local.sh up        # start gateway + experts (heuristic/offline)
-bash scripts/smoke_local.sh smoke     # health, routing, streaming, UI, asset checks
-bash scripts/smoke_local.sh down      # stop everything
-```
-
-To exercise the real models through the same script, point it at Ollama. Per-layer tags are overridable:
-
-```bash
-bash scripts/smoke_local.sh ollama-test
-# or pick models that fit your VRAM/RAM:
-ROUTER_MODEL_NAME=phi3:mini \
-GENERAL_MODEL_NAME=llama3.2:3b \
-CODING_MODEL_NAME=qwen2.5-coder:1.5b \
-REASONING_MODEL_NAME=phi3:mini \
-VISION_MODEL_NAME=phi3:mini \
-bash scripts/smoke_local.sh ollama-test
-```
-
-`ollama-test` restarts the router, general, coding, reasoning, vision **and gateway** against `OLLAMA_URL`, so token streaming and expert calls hit the same backend, then asserts a real marker comes back from the model. Reasoning falls back to `REASONING_FALLBACK_NAME` if its tag is still downloading.
-
-### Running on CPU-only hardware
-
-Local inference is memory- and time-bound. Three settings matter:
-
-- **One model resident at a time.** Ollama defaults to `OLLAMA_MAX_LOADED_MODELS=3`, which keeps three multi-GB models in RAM at once. On an 8 GB box the kernel OOM-kills `llama-server` mid-request and callers see `Server disconnected without sending a response`. `bash scripts/ollama_tune.sh apply` writes a systemd override setting `OLLAMA_MAX_LOADED_MODELS=1`, `OLLAMA_NUM_PARALLEL=1`, and `OLLAMA_KEEP_ALIVE=5m`, then restarts the service. `bash scripts/ollama_tune.sh status` shows loaded models, current unit environment, memory, and OOM history. If you cannot use sudo, `bash scripts/ollama_tune.sh local` starts a tuned instance on `:11435` — pass `MODELS_DIR=/path/to/models` because Ollama stores models per user, so an instance started as yourself will not see models owned by the `ollama` service account.
-- **Always cap generation.** At roughly 6-7 tokens/second on CPU, an uncapped reply generates until the context window fills (4096 tokens ≈ 10 minutes) and looks like a hang. `MODEL_MAX_TOKENS` (default `1024`) bounds every reply; the router overrides it with `ROUTER_MAX_TOKENS` (default `160`) because it only returns a small JSON object. Keep `MODEL_TIMEOUT` above the worst-case cold start.
-- **Budget the router.** The router prompt is ~290 tokens, which costs ~16s of prompt evaluation on CPU before any routing decision. If that exceeds the gateway's patience, routing falls back to the keyword heuristic for that request instead of failing.
-
-Transport failures are retried with backoff (`MODEL_RETRIES`, default `3`, and `MODEL_RETRY_DELAY`, default `3` seconds) because a restarted runtime shows up as a connection error. A bad model tag returns HTTP 404 and is **not** retried — it fails fast with the server's message in the service log.
-
-## Streaming protocol
-
-`POST /chat/stream` sends JSON SSE frames: `event: meta` (chosen task type, expert, model, and whether it came from `router` or the `buffered` fallback), `event: delta` (incremental text), `event: error` (stream unavailable, falling back), and `event: done` (character count). A terminal `data: [DONE]` is kept for simple clients. JSON framing means newlines inside a token cannot corrupt the stream. Text tasks stream tokens live from Ollama; vision, speech, and image tasks route through the buffered endpoint.
-
-The console renders these frames with a live expert badge, a typing cursor, fenced-code formatting, and Esc-to-stop.
