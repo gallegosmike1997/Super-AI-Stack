@@ -22,6 +22,9 @@ nav.tabs button.on{background:rgba(138,43,226,.22);border-color:rgba(155,77,255,
 .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
 .dot.off{background:var(--bad);box-shadow:0 0 12px var(--bad)}
 .grid{display:grid;gap:12px;margin-top:12px}
+/* Author styles beat the UA's [hidden]{display:none}, so sections styled with
+   .grid would stay visible even with the hidden attribute set. Re-assert it. */
+[hidden]{display:none!important}
 .cols2{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
 .cols3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
 @media(min-width:1000px){.cols{grid-template-columns:250px minmax(0,1fr) 300px}}

@@ -530,4 +530,5 @@ async def activity() -> dict[str, object]:
 
 @app.get("/")
 async def web_app() -> FileResponse:
-    return FileResponse(WEB_INDEX)
+    # Always revalidate: a cached console silently hides UI updates from the user.
+    return FileResponse(WEB_INDEX, headers={"Cache-Control": "no-cache"})

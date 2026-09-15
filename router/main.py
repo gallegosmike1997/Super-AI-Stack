@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from common.constants import SERVICE_URLS, SUPPORTED_TASKS
 from common.model_client import complete
+from common.model_manager import ensure_model
 from common.schemas import ExpertResponse, LLMRequest, RouterDecision, UnifiedResponse
 
 app = FastAPI(title="Super AI Stack - Router")
@@ -119,6 +120,30 @@ def build_router_prompt(message: str, metadata: dict | None) -> str:
     return f"{base}\n\nUser message:\n{message}\n\nMetadata:\n{meta_str}\n\nRouter JSON:"
 
 
+# Router task types map to expert service keys; "code" is the odd one out.
+TASK_TO_EXPERT = {"chat": "general", "code": "coding"}
+
+
+async def ensure_expert_model(task_type: str) -> None:
+    """Ask the model manager to swap in the expert's model before dispatch.
+
+    Reads the live model tag from the expert's /health so it always matches what
+    the expert will actually call. Best-effort: no manager or a slow swap just
+    means the request proceeds without one.
+    """
+    expert = TASK_TO_EXPERT.get(task_type, task_type)
+    base = SERVICE_URLS.get(expert)
+    if not base:
+        return
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            response = await client.get(f"{base}/health")
+            response.raise_for_status()
+        await ensure_model(response.json().get("model"))
+    except httpx.HTTPError:
+        return
+
+
 async def call_memory(query: str) -> list:
     async with httpx.AsyncClient(timeout=30.0) as client:
         resp = await client.post(MEMORY_URL, json={"query": query})
@@ -184,6 +209,7 @@ async def route(req: LLMRequest) -> UnifiedResponse:
             "approved": bool(req.metadata.get("approved")),
         }
     try:
+        await ensure_expert_model(task_type)
         result = ExpertResponse.model_validate(await call_service(SERVICE_ENDPOINTS[task_type], service_payload))
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=503, detail=f"{task_type} expert unavailable") from exc
