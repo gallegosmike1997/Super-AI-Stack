@@ -71,7 +71,81 @@ button.act{background:linear-gradient(135deg,rgba(0,229,255,.16),rgba(138,43,226
 img.art{width:100%;border-radius:10px;border:1px solid var(--line)}
 .mono{font:12px ui-monospace,monospace}
 .dimtxt{color:var(--muted);font-size:12px;line-height:1.6}
-</style>
+/* canvas panel additions (all additive) */
+.grid.cols{grid-template-columns:2fr 3fr 2fr}
+.grid.cols3{grid-template-columns:repeat(3,1fr)}
+.grid.cols2{grid-template-columns:repeat(2,1fr)}
+.dimtxt{color:var(--muted);font-size:12.5px;line-height:1.6}
+.stat{display:flex;flex-direction:column;gap:2px;background:#0a0f24;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.stat b{font-size:15px;color:var(--ink)}
+.stat span{font-size:10.5px;color:var(--muted);letter-spacing:.04em}
+.rowline{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:3px 0;border-bottom:1px dashed rgba(120,130,200,.14)}
+.rowline .k{font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;color:var(--muted);font-size:10.5px;letter-spacing:.1em;padding:4px 6px;border-bottom:1px solid var(--line)}
+.tbl td{padding:6px;border-bottom:1px solid rgba(120,130,200,.12);color:var(--ink)}
+.tiers{display:grid;gap:6px}
+.tier{display:flex;align-items:center;gap:12px;background:#0a0f24;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.tier em{font-style:normal;font-family:ui-monospace,monospace;color:var(--violet);font-weight:700}
+.tier span{font-size:12px;letter-spacing:.14em;color:var(--ink)}
+.tier small{color:var(--muted);margin-left:auto;font-size:11px}
+.cog{display:flex;gap:6px;flex-wrap:wrap}
+.cog .cell{flex:1;min-width:64px;background:#0a0f24;border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center}
+.cog .cell b{display:block;font-size:13px;color:var(--cyan)}
+.cog .cell span{font-size:9.5px;letter-spacing:.08em;color:var(--muted)}
+.chip{display:inline-block;padding:3px 10px;border-radius:99px;border:1px solid var(--line);font:600 10px ui-monospace,monospace;color:var(--muted);letter-spacing:.08em;margin-right:6px}
+.chip.on{border-color:var(--green);color:var(--green)}
+.act{background:linear-gradient(90deg,var(--violet),var(--mag));border:0;border-radius:9px;color:#fff;font:700 11px ui-monospace,monospace;letter-spacing:.12em;padding:9px 16px;cursor:pointer}
+.act:hover{filter:brightness(1.15)}
+.art{width:100%;border-radius:10px;border:1px solid var(--line)}
+.hexwrap{display:flex;align-items:center;gap:14px}
+.hex{width:74px;height:74px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--violet),var(--mag));color:#fff;font-size:34px;font-weight:800;clip-path:polygon(50% 0,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)}
+.sat{display:flex;flex-direction:column;gap:4px;font:600 10.5px ui-monospace,monospace;letter-spacing:.14em;color:var(--muted)}
+.pyr{display:flex;flex-direction:column;gap:4px;margin-top:12px}
+.pyr div{background:#0a0f24;border:1px solid var(--line);border-radius:8px;color:var(--muted);font:600 10px ui-monospace,monospace;letter-spacing:.1em;padding:5px 10px;text-align:center}
+.pill.warn{border-color:#ffb454;color:#ffb454}
+.meter{margin-top:8px}
+.meter .lab{display:flex;justify-content:space-between;font:600 10px ui-monospace,monospace;letter-spacing:.1em;color:var(--muted)}
+.meter .track{height:6px;border-radius:99px;background:#0a0f24;border:1px solid var(--line);overflow:hidden;margin-top:4px}
+.meter .fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));width:0;transition:width .6s}
+textarea,input{background:#050816;border:1px solid var(--line);border-radius:9px;color:var(--ink);padding:9px}/* canvas panel additions (all additive) */
+.grid.cols{grid-template-columns:2fr 3fr 2fr}
+.grid.cols3{grid-template-columns:repeat(3,1fr)}
+.grid.cols2{grid-template-columns:repeat(2,1fr)}
+.dimtxt{color:var(--muted);font-size:12.5px;line-height:1.6}
+.stat{display:flex;flex-direction:column;gap:2px;background:#0a0f24;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.stat b{font-size:15px;color:var(--ink)}
+.stat span{font-size:10.5px;color:var(--muted);letter-spacing:.04em}
+.rowline{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:3px 0;border-bottom:1px dashed rgba(120,130,200,.14)}
+.rowline .k{font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;color:var(--muted);font-size:10.5px;letter-spacing:.1em;padding:4px 6px;border-bottom:1px solid var(--line)}
+.tbl td{padding:6px;border-bottom:1px solid rgba(120,130,200,.12);color:var(--ink)}
+.tiers{display:grid;gap:6px}
+.tier{display:flex;align-items:center;gap:12px;background:#0a0f24;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.tier em{font-style:normal;font-family:ui-monospace,monospace;color:var(--violet);font-weight:700}
+.tier span{font-size:12px;letter-spacing:.14em;color:var(--ink)}
+.tier small{color:var(--muted);margin-left:auto;font-size:11px}
+.cog{display:flex;gap:6px;flex-wrap:wrap}
+.cog .cell{flex:1;min-width:64px;background:#0a0f24;border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center}
+.cog .cell b{display:block;font-size:13px;color:var(--cyan)}
+.cog .cell span{font-size:9.5px;letter-spacing:.08em;color:var(--muted)}
+.chip{display:inline-block;padding:3px 10px;border-radius:99px;border:1px solid var(--line);font:600 10px ui-monospace,monospace;color:var(--muted);letter-spacing:.08em;margin-right:6px}
+.chip.on{border-color:var(--green);color:var(--green)}
+.act{background:linear-gradient(90deg,var(--violet),var(--mag));border:0;border-radius:9px;color:#fff;font:700 11px ui-monospace,monospace;letter-spacing:.12em;padding:9px 16px;cursor:pointer}
+.act:hover{filter:brightness(1.15)}
+.art{width:100%;border-radius:10px;border:1px solid var(--line)}
+.hexwrap{display:flex;align-items:center;gap:14px}
+.hex{width:74px;height:74px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--violet),var(--mag));color:#fff;font-size:34px;font-weight:800;clip-path:polygon(50% 0,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)}
+.sat{display:flex;flex-direction:column;gap:4px;font:600 10.5px ui-monospace,monospace;letter-spacing:.14em;color:var(--muted)}
+.pyr{display:flex;flex-direction:column;gap:4px;margin-top:12px}
+.pyr div{background:#0a0f24;border:1px solid var(--line);border-radius:8px;color:var(--muted);font:600 10px ui-monospace,monospace;letter-spacing:.1em;padding:5px 10px;text-align:center}
+.pill.warn{border-color:#ffb454;color:#ffb454}
+.meter{margin-top:8px}
+.meter .lab{display:flex;justify-content:space-between;font:600 10px ui-monospace,monospace;letter-spacing:.1em;color:var(--muted)}
+.meter .track{height:6px;border-radius:99px;background:#0a0f24;border:1px solid var(--line);overflow:hidden;margin-top:4px}
+.meter .fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));width:0;transition:width .6s}
+textarea,input{background:#050816;border:1px solid var(--line);border-radius:9px;color:var(--ink);padding:9px}</style>
 </head>
 <body>
 <div class="wrap">
@@ -88,10 +162,20 @@ img.art{width:100%;border-radius:10px;border:1px solid var(--line)}
 <div class="live"><span class="dot" id="livedot"></span><span id="livetxt">LIVE</span></div>
 </header>
 <section class="grid cols" id="view-dashboard">
-  <aside class="glass card" style="display:flex;flex-direction:column;gap:10px">
-    <h3>Stack status</h3><div id="rail" class="dimtxt">polling…</div>
-    <h3 style="margin-top:6px">Backend</h3><div id="railbackend" class="dimtxt">polling…</div>
-    <img class="art" src="/assets/SAS%20Concept.png" alt="SAS concept" onerror="this.style.display='none'">
+  <aside class="glass card" style="display:flex;flex-direction:column;gap:12px">
+    <div>
+      <h3>SYSTEM PULSE</h3>
+      <div style="display:flex;align-items:baseline;gap:6px"><b id="healthscore" style="font-size:34px;color:var(--violet)">–</b><span class="dimtxt">% stack health</span></div>
+      <div class="grid cols2" style="gap:8px;margin-top:8px">
+        <div class="stat"><b id="uptime">–</b><span>gateway uptime</span></div>
+        <div class="stat"><b id="reqmin">–</b><span>req / min</span></div>
+        <div class="stat"><b id="latavg">–</b><span>avg latency</span></div>
+        <div class="stat"><b id="p50">–</b><span>p50 latency</span></div>
+      </div>
+    </div>
+    <div>
+      <h3>STACK MODULES</h3><div id="rail" class="dimtxt">polling…</div>
+    </div>
   </aside>
   <div class="glass card">
     <h3>Unified chat — router decides the expert</h3>
@@ -107,34 +191,54 @@ img.art{width:100%;border-radius:10px;border:1px solid var(--line)}
       </div>
     </form>
   </div>
-  <aside class="glass card" style="display:flex;flex-direction:column;gap:10px">
-    <h3>Telemetry</h3>
-    <div class="grid cols2" style="gap:10px">
-      <div class="stat"><b id="t-req">–</b><span>requests</span></div>
-      <div class="stat"><b id="t-err">–</b><span>errors</span></div>
-      <div class="stat"><b id="t-stream">–</b><span>streams</span></div>
-      <div class="stat"><b id="t-tools">–</b><span>tools</span></div>
+  <aside class="glass card" style="display:flex;flex-direction:column;gap:12px">
+    <div>
+      <h3>SYSTEM RESOURCES</h3><div id="reslist" class="dimtxt">polling…</div>
     </div>
-    <h3 style="margin-top:6px">Memory</h3><div id="railmemory" class="dimtxt">polling…</div>
-    <h3 style="margin-top:6px">Session</h3><div id="sess" class="dimtxt">Send a chat message to open a session trace.</div>
+    <div>
+      <h3>GLOBAL METRICS</h3>
+      <div class="grid cols2" style="gap:8px">
+        <div class="stat"><b id="t-req">–</b><span>total requests</span></div>
+        <div class="stat"><b id="t-stream">–</b><span>streams</span></div>
+        <div class="stat"><b id="t-err">–</b><span>errors</span></div>
+        <div class="stat"><b id="t-tools">–</b><span>tools</span></div>
+      </div>
+      <div class="rowline" style="margin-top:6px"><span class="k">success rate</span><b id="succ">–</b></div>
+    </div>
+    <div><h3>SESSION</h3><div id="sess" class="dimtxt">Send a chat message to open a session trace.</div></div>
   </aside>
 </section>
 <section class="grid cols3" id="view-stack" hidden>
   <div class="glass card">
-    <h3>Pipeline</h3>
-    <p class="dimtxt">client → gateway → router (Phi-3) → memory (FAISS) → expert<br>expert → router merge → reasoning polish → one answer</p>
-    <div id="pipeline" style="margin-top:8px"></div>
+    <h3>NEON BRAIN LATTICE</h3>
+    <div style="display:flex;align-items:baseline;gap:6px"><b id="stackpct" style="font-size:30px;color:var(--violet)">–</b><span class="dimtxt">stack health</span></div>
+    <p class="dimtxt" style="margin-top:6px">Live connectivity across reasoning, memory, perception and execution domains — measured as expert round-trip latency.</p>
+    <div class="cog" style="margin-top:8px" id="cogrow"></div>
+    <h3 style="margin-top:10px">NEURAL ACTIVITY STREAM</h3><div id="pipeline" style="margin-top:8px"></div>
   </div>
   <div class="glass card">
     <h3>Model table</h3>
     <table class="tbl" id="catalog"><thead><tr><th>Layer</th><th>Model</th><th>Purpose</th><th>State</th></tr></thead><tbody></tbody></table>
   </div>
   <div class="glass card">
-    <h3>Routing config</h3><div id="routing" class="dimtxt">polling…</div>
+    <h3>ROUTING CONFIG</h3><div id="routing" class="dimtxt">polling…</div>
+    <h3 style="margin-top:8px">BACKEND</h3><div id="railbackend" class="dimtxt">polling…</div>
     <img class="art" style="margin-top:8px" src="/assets/SAS%20Stack.png" alt="SAS stack" onerror="this.style.display='none'">
   </div>
 </section>
 <section class="grid cols3" id="view-models" hidden>
+  <div class="glass card" style="grid-column:1/-1">
+    <h3>AI-CORE ARCHITECTURE</h3>
+    <p class="dimtxt">Hierarchical model ecosystem — the five tiers your stack runs on.</p>
+    <div class="tiers" style="margin-top:8px">
+      <div class="tier"><em>01</em><span>FOUNDATION</span><small>Model families &amp; origins</small></div>
+      <div class="tier"><em>02</em><span>INFRASTRUCTURE</span><small>Compute &amp; data layer</small></div>
+      <div class="tier"><em>03</em><span>MODEL LAYER</span><small>Tuning &amp; inference</small></div>
+      <div class="tier"><em>04</em><span>ORCHESTRATION</span><small>Routing &amp; workflows</small></div>
+      <div class="tier"><em>05</em><span>AGENTS</span><small>Autonomous applications</small></div>
+    </div>
+    <div class="rowline" style="margin-top:10px"><span class="k">MODEL HUB</span><b id="hubstats" class="dimtxt">polling…</b></div>
+  </div>
   <div class="glass card">
     <h3>Expert health</h3>
     <table class="tbl" id="healthtbl"><thead><tr><th>Expert</th><th>Model</th><th>Backend</th></tr></thead><tbody></tbody></table>
@@ -142,22 +246,30 @@ img.art{width:100%;border-radius:10px;border:1px solid var(--line)}
   <div class="glass card">
     <h3>Inference backend</h3><div id="backend" class="dimtxt">polling…</div>
     <div class="meter" id="residentmeter" hidden><div class="lab"><span>RESIDENT MODELS</span><span id="residentnum"></span></div><div class="track"><div class="fill" id="residentfill"></div></div></div>
-    <img class="art" style="margin-top:8px" src="/assets/SAS%20Models.png" alt="SAS models" onerror="this.style.display='none'">
   </div>
   <div class="glass card">
     <h3>Generation</h3><div id="gen" class="dimtxt">Images produced by the image expert appear here.</div>
     <img class="art" style="margin-top:8px" src="/assets/DB%20Navbar.png" alt="SAS nav" onerror="this.style.display='none'">
   </div>
 </section>
+
 <section class="grid cols" id="view-memory" hidden>
+  <div class="glass card" style="grid-column:1/-1">
+    <h3>REAL-TIME MEMORY STREAMS</h3>
+    <p class="dimtxt">Live activity across memory channels and context layers.</p>
+    <div style="margin-top:6px"><span class="chip on">● LIVE</span><span class="chip" id="chipdocs">docs –</span><span class="chip" id="chipev">events –</span></div>
+    <div class="grid cols2" style="gap:8px;margin-top:8px" id="mstats"></div>
+  </div>
+  <div class="glass card">
+    <h3>MEMORY LAYER STATUS</h3><div id="layerstatus" class="dimtxt">polling…</div>
+    <h3 style="margin-top:8px">LIVE STREAMS</h3><div id="streams" class="dimtxt">polling…</div>
+  </div>
   <div class="glass card">
     <h3>Add memory</h3>
     <textarea id="memtext" rows="4" style="width:100%" placeholder="Paste durable knowledge…"></textarea>
     <button class="act" id="memadd" style="margin-top:8px">STORE IN FAISS</button>
     <p id="memout" class="mono" style="color:var(--green)"></p>
-  </div>
-  <div class="glass card">
-    <h3>Search memory</h3>
+    <h3 style="margin-top:8px">Search memory</h3>
     <div style="display:flex;gap:8px"><input id="memq" placeholder="query…" style="flex:1"><button class="act" id="memsearch">FIND</button></div>
     <div id="memhits" class="dimtxt" style="margin-top:8px"></div>
   </div>
@@ -166,30 +278,58 @@ img.art{width:100%;border-radius:10px;border:1px solid var(--line)}
     <img class="art" style="margin-top:8px" src="/assets/SAS%20Memory.png" alt="SAS memory" onerror="this.style.display='none'">
   </div>
 </section>
-<section class="grid" id="view-activity" hidden>
+<section class="grid cols3" id="view-activity" hidden>
   <div class="glass card">
-    <h3>Activity system</h3><div id="events" class="dimtxt">No events yet.</div>
+    <h3>SYSTEM METRICS</h3><div id="sysbars" class="dimtxt">polling…</div>
+    <div class="grid cols2" style="gap:8px;margin-top:8px">
+      <div class="stat"><b id="p95">–</b><span>latency p95</span></div>
+      <div class="stat"><b id="qdepth">–</b><span>queue depth</span></div>
+    </div>
   </div>
   <div class="glass card">
-    <h3>System log</h3><div id="log" class="mono" style="color:var(--muted)">Boot log ready.</div>
+    <h3>CORE STATUS</h3><div id="corelist" class="dimtxt">polling…</div>
+  </div>
+  <div class="glass card">
+    <h3>ALERTS</h3><div id="alertfeed" class="dimtxt">No alerts.</div>
+  </div>
+  <div class="glass card" style="grid-column:1/-1">
+    <h3>Activity system</h3><div id="events" class="dimtxt">No events yet.</div>
+    <h3 style="margin-top:8px">System log</h3><div id="log" class="mono" style="color:var(--muted)">Boot log ready.</div>
     <img class="art" style="margin-top:8px" src="/assets/SAS%20Activity.png" alt="SAS activity" onerror="this.style.display='none'">
   </div>
 </section>
 <section class="grid cols3" id="view-concept" hidden>
   <div class="glass card">
-    <h3>Concept stack</h3>
+    <h3>CONCEPT STACK</h3>
     <div id="concepts" class="dimtxt">polling…</div>
   </div>
   <div class="glass card">
-    <h3>Architecture vision</h3>
-    <img class="art" src="/assets/SAS%20Concept.png" alt="SAS concept" onerror="this.style.display='none'">
+    <h3>POWERED BY SUPER AI OS</h3>
+    <div class="hexwrap">
+      <div class="hex">S</div>
+      <div class="sat"><span>MEMORY</span><span>REASONING</span><span>PLANNING</span><span>LEARNING</span><span>PERCEPTION</span><span>TOOLS</span></div>
+    </div>
+    <div class="pyr">
+      <div>8 · SUPER AI AGENTS</div>
+      <div>7 · APPLICATION LAYER</div>
+      <div>6 · ORCHESTRATION</div>
+      <div>5 · MODEL LAYER</div>
+      <div>4 · DATA LAYER</div>
+      <div>3 · INFRASTRUCTURE</div>
+      <div>2 · TOOLING</div>
+      <div>1 · FOUNDATION</div>
+    </div>
   </div>
   <div class="glass card">
-    <h3>Identity</h3>
-    <img class="art" src="/assets/SAS%20Identity%20Pallete.png" alt="SAS palette" onerror="this.style.display='none'">
+    <h3>BUILT FOR THE FUTURE</h3>
+    <p class="dimtxt">Modular. Scalable. Limitless.</p>
+    <p style="font-size:40px;color:var(--cyan);margin:6px 0">∞</p>
+    <img class="art" src="/assets/SAS%20Concept.png" alt="SAS concept" onerror="this.style.display='none'">
+    <img class="art" style="margin-top:8px" src="/assets/SAS%20Identity%20Pallete.png" alt="SAS palette" onerror="this.style.display='none'">
     <img class="art" style="margin-top:8px" src="/assets/SAS%20Dashboard.png" alt="SAS dashboard" onerror="this.style.display='none'">
   </div>
 </section>
+
 </div><script>
 const $=s=>document.querySelector(s);
 const thread=$('#thread'),log=$('#log'),route=$('#route'),session=crypto.randomUUID();
@@ -207,38 +347,81 @@ const pill=s=>'<span class="pill '+(s==='ok'?'':'off')+'">'+esc(s)+'</span>';
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');['dashboard','stack','models','memory','activity','concept'].forEach(v=>$('#view-'+v).hidden=v!==b.dataset.view);note('view='+b.dataset.view)});
 async function api(path,opts){const r=await fetch(path,Object.assign({headers:key()?{'x-api-key':key()}:{}},opts||{}));if(!r.ok)throw new Error(path+' '+r.status);return r.json()}
 function stateOf(svc){if(!svc||svc.status!=='ok')return {cls:'off',txt:'down'};return svc.backend==='configured'?{cls:'',txt:'live'}:{cls:'warn',txt:'stub'}}
-</script><script>
+</script>
+<script>function set(id,html){var el=document.getElementById(id);if(el){el.innerHTML=html}}
+function txt(id,v){var el=document.getElementById(id);if(el){el.textContent=v}}
+function fmtUp(s){s=s||0;var h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?h+'h '+m+'m':m+'m '+(s%60)+'s'}
 function renderStack(d){
-  const cat=d.catalog||[],svcs=d.services||{};
-  const tb=$('#catalog tbody');tb.innerHTML=cat.map(c=>{const st=stateOf(svcs[c.expert]);return '<tr><td>'+esc(c.layer)+'</td><td>'+esc(c.model)+'</td><td>'+esc(c.purpose)+'</td><td>'+pill(st.txt)+'</td></tr>'}).join('');
-  $('#pipeline').innerHTML=cat.map((c,i)=>'<div class="layer"><h4><em>'+String(i+1).padStart(2,'0')+'</em>'+esc(c.layer)+' · '+esc(c.expert)+'</h4><p>'+esc(c.purpose)+' — model <b style="color:#c9e8ff">'+esc(c.model)+'</b> '+pill(stateOf(svcs[c.expert]).txt)+'</p></div>').join('');
-  const okN=cat.filter(c=>svcs[c.expert]&&svcs[c.expert].status==='ok').length;
-  $('#rail').innerHTML=cat.map(c=>'<div class="rowline"><span class="k">'+esc(c.expert)+'</span>'+pill(stateOf(svcs[c.expert]).txt)+'</div>').join('')+'<div class="rowline"><span class="k">healthy</span><b>'+okN+'/'+cat.length+'</b></div>';
-  $('#livedot').className='dot'+(okN===cat.length?'':' off');$('#livetxt').textContent=okN===cat.length?'ALL SYSTEMS LIVE':okN+'/'+cat.length+' UP';
-  $('#concepts').innerHTML=cat.map(c=>'<div class="layer"><h4><em>◆</em>'+esc(c.layer)+'</h4><p>'+esc(c.purpose)+'</p></div>').join('');
+  var cat=d.catalog||[],svcs=d.services||{};
+  set('catalog','<table class="tbl"><tr><th>LAYER</th><th>MODEL</th><th>PURPOSE</th><th>STATE</th></tr>'+cat.map(function(c){
+    var s=svcs[c.expert]||{status:'offline'};return '<tr><td>'+esc(c.layer)+'</td><td>'+esc(c.model)+'</td><td>'+esc(c.purpose)+'</td><td>'+pill(s.status)+'</td></tr>'
+  }).join('')+'</table>');
+  set('pipeline',cat.map(function(c,i){
+    var s=svcs[c.expert]||{status:'offline'};return '<div class="layer"><h4><em>'+String(i+1).padStart(2,'0')+'</em></h4><h4 style="margin-left:6px">'+esc(c.layer)+' · '+esc(c.expert)+'</h4><p>'+esc(c.purpose)+' — model <b style="color:#c9e8ff">'+esc(c.model)+'</b> '+pill(s.status)+'</p></div>'
+  }).join(''));
+  var okN=cat.filter(function(c){return (svcs[c.expert]||{}).status=='ok'}).length;
+  set('rail',cat.map(function(c){
+    var s=svcs[c.expert]||{status:'offline'};return '<div class="rowline"><span class="k">'+esc(c.expert)+'</span>'+pill(s.status)+'</div>'
+  }).join('')+'<div class="rowline"><span class="k">healthy</span><b>'+okN+'/'+cat.length+'</b></div>');
+  var ld=document.getElementById('livedot'),lt=document.getElementById('livetxt');
+  if(ld){ld.className='dot'+(okN===cat.length?'':' off')}
+  if(lt){lt.textContent=okN===cat.length?'ALL SYSTEMS LIVE':okN+'/'+cat.length+' UP'}
+  set('concepts',cat.map(function(c){
+    var s=svcs[c.expert]||{status:'offline'};return '<div class="layer"><h4><em>◆</em><span style="margin-left:6px">'+esc(c.layer)+'</span> <span class="chip'+(s.status=='ok'?' on':'')+'">'+pill(s.status)+'</span></h4><p style="margin-left:18px">'+esc(c.purpose)+' · '+esc(c.model)+'</p></div>'
+  }).join(''));
 }
 function renderDiag(d){
-  const m=d.metrics||{};$('#t-req').textContent=m.requests_total??'0';$('#t-err').textContent=m.errors_total??'0';$('#t-stream').textContent=m.stream_requests_total??'0';
-  const tools=d.tools||[];$('#t-tools').textContent=tools.length;
-  const svcs=d.services||{};
-  $('#healthtbl tbody').innerHTML=Object.keys(svcs).map(n=>{const s=svcs[n],st=stateOf(s);return '<tr><td>'+esc(n)+'</td><td>'+esc((s&&s.model)||'—')+'</td><td>'+pill(st.txt)+(s&&s.latency_ms!=null?' <span class="mono" style="color:var(--muted)">'+s.latency_ms+'ms</span>':'')+'</td></tr>'}).join('');
-  const b=d.backend||{};let bh='<div class="rowline"><span class="k">url</span><span class="mono">'+esc(b.url||'—')+'</span></div><div class="rowline"><span class="k">reachable</span>'+pill(b.reachable?'ok':'off')+'</div>';
-  const inst=b.installed||[];bh+='<div class="rowline"><span class="k">installed</span><b>'+(b.reachable?inst.length:'—')+'</b></div>';
-  (b.resident||[]).forEach(r=>{bh+='<div class="rowline"><span class="k">resident</span><span class="mono">'+esc(r.model||'?')+' · '+esc(r.context||'?')+' ctx</span></div>'});
-  $('#backend').innerHTML=bh;
-  const rm=$('#residentmeter');if(b.reachable){rm.hidden=false;const n=(b.resident||[]).length;$('#residentnum').textContent=n+'/1';$('#residentfill').style.width=Math.min(100,n*50)+'%'}
-  const mem=d.memory||{},memOk=mem.status==='ok';
-  $('#railmemory').innerHTML='<div class="rowline"><span class="k">faiss</span>'+pill(memOk?'ok':'off')+'</div><div class="rowline"><span class="k">documents</span><b>'+(memOk?(mem.documents??'0'):'—')+'</b></div>';
-  $('#railbackend').innerHTML='<div class="rowline"><span class="k">backend</span>'+pill(b.reachable?'ok':'off')+'</div><div class="rowline"><span class="k">models</span><b>'+(b.reachable?inst.length:'—')+'</b></div>';
+  var m=d.metrics||{};
+  txt('t-req',m.requests_total||0);txt('t-err',m.errors_total||0);
+  txt('t-stream',m.stream_requests_total||0);
+  txt('t-tools',(d.tools||[]).length);
+  var svcs=d.services||{};
+  var order=['router','general','coding','reasoning','vision','speech','image_gen','memory'];
+  set('healthtbl','<table class="tbl"><tr><th>EXPERT</th><th>MODEL</th><th>STATE</th><th>LAT</th></tr>'+Object.keys(svcs).map(function(n){
+    var s=svcs[n]||{},st=stateOf(s);return '<tr><td>'+esc(n)+'</td><td>'+esc(s.model||s.backend||'')+'</td><td>'+pill(st.txt)+'</td><td>'+(s.latency_ms!=null?s.latency_ms+' ms':'—')+'</td></tr>'
+  }).join('')+'</table>');
+  var ok=order.filter(function(n){return (svcs[n]||{}).status=='ok'}).length,total=order.length||1;
+  var health=Math.round(ok/total*100),hex=document.getElementById('healthscore');
+  if(hex){hex.textContent=health;hex.style.background=health===100?'linear-gradient(135deg,#0fa968,#39d98a)':health>60?'linear-gradient(135deg,var(--violet),var(--mag))':'linear-gradient(135deg,#c0392b,#ff5c7a)'}
+  var g=d.gateway||{};
+  set('hubstats','<div class="stat"><b>'+fmtUp(g.uptime_s)+'</b><span>UPTIME</span></div><div class="stat"><b>'+(g.req_per_min||0)+'</b><span>REQ/MIN</span></div><div class="stat"><b>'+(g.latency_p50_ms!=null?g.latency_p50_ms+' ms':'—')+'</b><span>P50</span></div><div class="stat"><b>'+(g.success_rate==null?'—':g.success_rate+'%')+'</b><span>SUCC</span></div><div class="stat"><b>'+(g.stream_requests_total||0)+'</b><span>STREAMS</span></div><div class="stat"><b>'+(g.errors_total||0)+'</b><span>ERRORS</span></div>');
+  set('sysbars','<div class="rowline"><span class="k">CPU</span><b>'+Math.round((d.system||{}).cpu_pct||0)+'%</b> <span class="dimtxt">'+(d.system||{}).cores||'? cores</span></div><div class="rowline"><span class="k">MEM</span><b>'+((d.system||{}).mem_used_gb||0).toFixed(1)+' / '+((d.system||{}).mem_total_gb||0).toFixed(1)+' GB</span></div>');
+  txt('p95',(g.latency_p95_ms!=null?g.latency_p95_ms+' ms':'—'));
+  txt('p50',(g.latency_p50_ms!=null?g.latency_p50_ms+' ms':'—'));
+  txt('reqmin',g.req_per_min||0);
+  txt('qdepth',g.inflight!=null?g.inflight:0);
+  txt('latavg',(g.latency_avg_ms!=null?g.latency_avg_ms+' ms':'—'));
+  txt('succ',g.success_rate==null?'—':g.success_rate+'%');
+  txt('streams',g.stream_requests_total||0);
+  txt('uptime',fmtUp(g.uptime_s));
+  txt('stackpct',health+'%');
+  var be=d.backend||{};var inst=be.installed||[],res=be.resident||[];
+  set('backend','<div class="rowline"><span class="k">url</span><span class="mono" style="color:var(--muted)">'+esc(be.url||'—')+'</span></div><div class="rowline"><span class="k">reachable</span>'+pill(be.reachable?'ok':'off')+'</div><div class="rowline"><span class="k">installed</span><b>'+inst.length+'</b></div>'+(be.reachable?'':'<div class="rowline"><span class="k">tip</span><span class="dimtxt">pull models to enable real inference</span></div>'));
+  var rm=document.getElementById('residentmeter');
+  if(rm){rm.hidden=!be.reachable;var rn=document.getElementById('residentnum');if(rn)rn.textContent=res.length+'/'+Math.max(1,inst.length);var rf=document.getElementById('residentfill');if(rf)rf.style.width=inst.length?Math.round(res.length/inst.length*100)+'%':0}
+  set('railbackend','<div class="rowline"><span class="k">backend</span>'+pill(be.reachable?'ok':'off')+'</div><div class="rowline"><span class="k">installed</span><span class="mono">'+inst.length+'</span></div><div class="rowline"><span class="k">resident</span><span class="mono">'+res.length+'</span></div>');
+  set('reslist',order.map(function(n){var s=svcs[n]||{};return '<div class="rowline"><span class="k">'+esc(n)+'</span><span>'+pill(s.status||'down')+' <span class="mono" style="color:var(--muted)">'+(s.model||'')+'</span> <span style="color:var(--muted);font-size:11px">'+(s.latency_ms!=null?s.latency_ms+'ms':'')+'</span></span></div>'}).join('')+'<div class="rowline"><span class="k">healthy</span><b>'+ok+'/'+total+'</b></div>');
+  var mem=d.memory||{};
+  txt('mstats',(mem.documents||0)+' documents in FAISS · backend '+(mem.backend||'faiss'));
+  set('chipdocs','<span class="chip on">'+(mem.documents||0)+' DOCS</span>');
+  set('chipev','<span class="chip">'+(d.events||[]).length+' EVENTS</span>');
+  set('cogrow',order.map(function(n){var s=svcs[n]||{};return '<div class="cell"><b>'+(s.status=='ok'?'●':'○')+'</b><span>'+esc(n.toUpperCase())+'</span><span style="display:block;font-size:9px;color:var(--muted)">'+esc(s.model||'')+'</span></div>'}).join(''));
 }
 function renderActivity(d){
-  const det=e=>Object.entries(e).filter(([k])=>!['type','at','ts','time'].includes(k)).map(([k,v])=>k+'='+v).join(' ');
-  $('#events').innerHTML=(d.alerts||[]).map(a=>'<div class="evt '+(a.level==='error'?'error':a.level==='warn'?'warn':'ok')+'"><span class="t">[ALERT]</span><span class="x">'+esc(a.text)+'</span></div>').join('')+(d.events||[]).slice().reverse().map(e=>'<div class="evt ok"><span class="t">'+esc(e.at||e.ts||e.time||'')+'</span><span class="x">'+esc(e.type||'event')+(det(e)?' — '+esc(det(e)):'')+'</span></div>').join('')||'<p>No events yet.</p>';
+  var ev=d.events||[],al=d.alerts||[];
+  var af=al.map(function(a){return '<div class="rowline"><span class="k alert '+a.level+'"></span><span>'+esc(a.text||a.message||'')+'</span></div>'}).join('');
+  var ef=ev.slice().reverse().map(function(e){
+    var det=Object.entries(e).filter(function(kv){return !['type','at','ts','time'].includes(kv[0])}).map(function(kv){return kv[0]+'='+kv[1]}).join(' ');
+    return '<div class="evt ok"><span class="t">'+esc(e.at||e.ts||e.time||'')+'</span><span class="x">'+esc(e.type||'event')+(det?' — '+esc(det):'')+'</span></div>'
+  }).join('');
+  set('events',(af+ef)||'<p class="dimtxt">No events yet — route a request from the Dashboard.</p>');
+  set('alertfeed',al.length?al.map(function(a){return '<div class="rowline"><span class="k alert '+(a.level||'')+'"></span><span>'+esc(a.text||a.message||'')+'</span></div>'}).join(''):'<p class="dimtxt">All clear — no active alerts.</p>');
 }
 async function stack(){try{renderStack(await api('/api/stack'))}catch(e){note('stack poll failed: '+e.message)}}
-async function diag(){try{renderDiag(await api('/api/diagnostics'))}catch(e){note('diagnostics poll failed: '+e.message)}}
+async function diag(){try{renderDiag(await api('/api/diagnostics'))}catch(e){note('diag poll failed: '+e.message)}}
 async function act(){try{renderActivity(await api('/api/activity'))}catch(e){note('activity poll failed: '+e.message)}}
-</script><script>
+</script>
+<script>
 let streaming=false,ctl=null;
 function setBusy(b,m){streaming=b;document.querySelector('#chat button').disabled=b;document.querySelector('#chat button').textContent=b?(m||'Streaming…'):'SEND'}
 $('#chat').addEventListener('submit',async e=>{
