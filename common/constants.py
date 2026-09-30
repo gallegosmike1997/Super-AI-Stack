@@ -1,19 +1,53 @@
 import os
 
-
-SERVICE_URLS = {
-	"router": os.getenv("ROUTER_URL", "http://localhost:8001"),
-	"general": os.getenv("GENERAL_URL", "http://localhost:8002"),
-	"coding": os.getenv("CODING_URL", "http://localhost:8003"),
-	"memory": os.getenv("MEMORY_URL", "http://localhost:8004"),
-	"reasoning": os.getenv("REASONING_URL", "http://localhost:8005"),
-	"vision": os.getenv("VISION_URL", "http://localhost:8006"),
-	"speech": os.getenv("SPEECH_URL", "http://localhost:8007"),
-	"image_gen": os.getenv("IMAGE_URL", "http://localhost:8008"),
-	"agent": os.getenv("AGENT_URL", "http://localhost:8009"),
+# Router task types do not always match the expert service key ("code" is the
+# odd one out). Both the gateway and the router resolve models through this map,
+# so it lives here instead of being duplicated - a divergence once silently
+# disabled code streaming.
+TASK_TO_EXPERT = {
+    "chat": "general",
+    "code": "coding",
+    "reasoning": "reasoning",
+    "vision": "vision",
+    "speech": "speech",
+    "image_gen": "image_gen",
+    "agent": "agent",
 }
 
-SUPPORTED_TASKS = {"chat", "code", "reasoning", "vision", "speech", "image_gen", "agent"}
+# Only these experts are text LLMs that can token-stream through the backend.
+STREAM_EXPERTS = ("general", "coding", "reasoning")
+
+SERVICE_URLS = {
+    "router": os.getenv("ROUTER_URL", "http://localhost:8001"),
+    "general": os.getenv("GENERAL_URL", "http://localhost:8002"),
+    "coding": os.getenv("CODING_URL", "http://localhost:8003"),
+    "memory": os.getenv("MEMORY_URL", "http://localhost:8004"),
+    "reasoning": os.getenv("REASONING_URL", "http://localhost:8005"),
+    "vision": os.getenv("VISION_URL", "http://localhost:8006"),
+    "speech": os.getenv("SPEECH_URL", "http://localhost:8007"),
+    "image_gen": os.getenv("IMAGE_URL", "http://localhost:8008"),
+    "agent": os.getenv("AGENT_URL", "http://localhost:8009"),
+}
+
+SUPPORTED_TASKS = set(TASK_TO_EXPERT)
+
+# Experts the gateway reports on: everything except the router itself.
+EXPERT_SERVICES = tuple(name for name in SERVICE_URLS if name != "router")
+
+# Port each service listens on, used by the dev launcher and the docs.
+SERVICE_PORTS = {
+    "gateway": 8000,
+    "router": 8001,
+    "general": 8002,
+    "coding": 8003,
+    "memory": 8004,
+    "reasoning": 8005,
+    "vision": 8006,
+    "speech": 8007,
+    "image_gen": 8008,
+    "agent": 8009,
+    "model_manager": 8010,
+}
 
 # Local MoE catalog: layer -> (expert service, default local model, purpose).
 # Override any MODEL_NAME via environment to match your hardware

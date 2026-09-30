@@ -1,9 +1,19 @@
 [project]
 name = "super-ai-stack"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "A local Mixture-of-Experts AI stack: one API gateway routing to specialised local and remote experts."
 readme = "README.md"
 requires-python = ">=3.13"
+license = { text = "MIT" }
+keywords = ["ai", "moe", "llm", "fastapi", "ollama", "faiss", "agents"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "fastapi>=0.141.1",
     "httpx>=0.28.1",
@@ -12,14 +22,44 @@ dependencies = [
     "uvicorn[standard]>=0.35.0",
 ]
 
+[project.optional-dependencies]
+# Local document ingestion; also installed in the container image.
+pdf = ["pypdf>=5.0.0"]
+# Local speech-to-text for the speech expert.
+speech = ["faster-whisper>=1.0.0"]
+
 [project.scripts]
+sas = "super_ai_stack:main"
 super-ai-stack = "super_ai_stack:main"
 
 [dependency-groups]
 dev = [
     "pytest>=8.4.0",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.6.0",
 ]
 
 [build-system]
 requires = ["uv_build>=0.12.9,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+filterwarnings = ["error::DeprecationWarning:super_ai_stack.*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+# E501 is delegated to the formatter; the rest catch real defects.
+select = ["E4", "E7", "E9", "F", "B", "UP", "SIM", "I"]
+ignore = ["E501", "B008", "SIM108"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests exercise error paths and intentionally shadow builtins.
+"tests/*" = ["B011", "SIM117"]
+# The console is a single self-contained HTML file.
+"web/*" = ["ALL"]

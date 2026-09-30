@@ -28,9 +28,7 @@ async def ensure_model(model: str | None) -> None:
     if not url or not model:
         return
     try:
-        async with httpx.AsyncClient(
-            timeout=float(os.getenv("MODEL_ENSURE_TIMEOUT", "620"))
-        ) as client:
+        async with httpx.AsyncClient(timeout=float(os.getenv("MODEL_ENSURE_TIMEOUT", "620"))) as client:
             response = await client.post(f"{url}/ensure", json={"model": model})
             response.raise_for_status()
         _LOG.info("model manager: %s", response.json())

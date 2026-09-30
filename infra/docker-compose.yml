@@ -1,30 +1,66 @@
+# Super AI Stack - full local deployment.
+#
+# Every service waits for the ones it depends on to report healthy, so a cold
+# `docker compose up` converges instead of failing the first few requests while
+# models are still loading.
+
+x-expert: &expert
+  build: {context: .., dockerfile: infra/Dockerfile}
+  restart: unless-stopped
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  healthcheck: &health
+    test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+    interval: 15s
+    timeout: 5s
+    retries: 5
+    start_period: 30s
+
+x-llm: &llm
+  <<: *expert
+  healthcheck: *health
+  environment: &llm-env
+    MODEL_API_KEY: ${MODEL_API_KEY:-}
+    MODEL_MAX_TOKENS: ${MODEL_MAX_TOKENS:-1024}
+    LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
 services:
   gateway:
     build:
       context: ..
       dockerfile: infra/Dockerfile
     command: uvicorn gateway.main:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
     environment:
       ROUTER_URL: http://router:8001
+      GENERAL_URL: http://llm_general:8002
+      CODING_URL: http://llm_coding:8003
+      MEMORY_URL: http://memory:8004
+      REASONING_URL: http://llm_reasoning:8005
+      VISION_URL: http://vision:8006
+      SPEECH_URL: http://speech:8007
+      IMAGE_URL: http://image_gen:8008
+      AGENT_URL: http://agent:8009
       SUPER_AI_API_KEY: ${SUPER_AI_API_KEY:-}
       RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-60}
       # The gateway streams tokens straight from the model runtime.
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
       MODEL_MAX_TOKENS: ${MODEL_MAX_TOKENS:-1024}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     depends_on:
-      - router
+      router:
+        condition: service_healthy
     volumes:
       - session_data:/data
+    healthcheck: *health
 
   router:
-    build:
-      context: ..
-      dockerfile: infra/Dockerfile
+    <<: *expert
     command: uvicorn router.main:app --host 0.0.0.0 --port 8001
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
       ROUTER_MODEL_BASE_URL: ${ROUTER_MODEL_BASE_URL:-}
       ROUTER_MODEL_NAME: ${ROUTER_MODEL_NAME:-phi3:mini}
@@ -41,65 +77,65 @@ services:
       SPEECH_URL: http://speech:8007
       IMAGE_URL: http://image_gen:8008
       AGENT_URL: http://agent:8009
+      # Give the router a model-swap scheduler when one is running.
+      MODEL_MANAGER_URL: http://model_manager:8010
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     depends_on:
-      - llm_general
-      - llm_coding
-      - memory
-      - llm_reasoning
-      - vision
-      - speech
-      - image_gen
+      llm_general: {condition: service_healthy}
+      llm_coding: {condition: service_healthy}
+      memory: {condition: service_healthy}
+      llm_reasoning: {condition: service_healthy}
+      vision: {condition: service_healthy}
+      speech: {condition: service_healthy}
+      image_gen: {condition: service_healthy}
+      agent: {condition: service_healthy}
 
   llm_general:
-    build: {context: .., dockerfile: infra/Dockerfile}
+    <<: *llm
     command: uvicorn llm_general.main:app --host 0.0.0.0 --port 8002
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
+      <<: *llm-env
       MODEL_BASE_URL: ${GENERAL_MODEL_BASE_URL:-http://host.docker.internal:11434}
       MODEL_NAME: ${GENERAL_MODEL_NAME:-llama3.1}
-      MODEL_API_KEY: ${MODEL_API_KEY:-}
-      MODEL_TIMEOUT: ${GENERAL_MODEL_TIMEOUT:-120}
-      MODEL_MAX_TOKENS: ${MODEL_MAX_TOKENS:-1024}
+      MODEL_TIMEOUT: ${GENERAL_MODEL_TIMEOUT:-300}
+
   llm_coding:
-    build: {context: .., dockerfile: infra/Dockerfile}
+    <<: *llm
     command: uvicorn llm_coding.main:app --host 0.0.0.0 --port 8003
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
+      <<: *llm-env
       MODEL_BASE_URL: ${CODING_MODEL_BASE_URL:-http://host.docker.internal:11434}
       MODEL_NAME: ${CODING_MODEL_NAME:-qwen2.5-coder:7b}
-      MODEL_API_KEY: ${MODEL_API_KEY:-}
       MODEL_TIMEOUT: ${CODING_MODEL_TIMEOUT:-600}
-      MODEL_MAX_TOKENS: ${MODEL_MAX_TOKENS:-1024}
-  memory:
-    build: {context: .., dockerfile: infra/Dockerfile}
-    command: uvicorn memory.main:app --host 0.0.0.0 --port 8004
-    volumes:
-      - memory_data:/data
+
   llm_reasoning:
-    build: {context: .., dockerfile: infra/Dockerfile}
+    <<: *llm
     command: uvicorn llm_reasoning.main:app --host 0.0.0.0 --port 8005
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
+      <<: *llm-env
       MODEL_BASE_URL: ${REASONING_MODEL_BASE_URL:-http://host.docker.internal:11434}
       MODEL_NAME: ${REASONING_MODEL_NAME:-deepseek-r1:8b}
-      MODEL_API_KEY: ${MODEL_API_KEY:-}
-      MODEL_TIMEOUT: ${REASONING_MODEL_TIMEOUT:-300}
-      MODEL_MAX_TOKENS: ${MODEL_MAX_TOKENS:-1024}
+      MODEL_TIMEOUT: ${REASONING_MODEL_TIMEOUT:-600}
+
   vision:
-    build: {context: .., dockerfile: infra/Dockerfile}
+    <<: *llm
     command: uvicorn vision.main:app --host 0.0.0.0 --port 8006
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
+      <<: *llm-env
       MODEL_BASE_URL: ${VISION_MODEL_BASE_URL:-http://host.docker.internal:11434}
-      MODEL_NAME: ${VISION_MODEL_NAME:-qwen2.5vl:3b}
-      MODEL_API_KEY: ${MODEL_API_KEY:-}
-      MODEL_TIMEOUT: ${VISION_MODEL_TIMEOUT:-180}
-      MODEL_MAX_TOKENS: ${MODEL_MAX_TOKENS:-1024}
+
+  memory:
+    <<: *expert
+    command: uvicorn memory.main:app --host 0.0.0.0 --port 8004
+    environment:
+      MEMORY_DATA_DIR: /data
+      MEMORY_MAX_DOCUMENTS: ${MEMORY_MAX_DOCUMENTS:-50000}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - memory_data:/data
+
   speech:
+    <<: *expert
     build:
       context: ..
       dockerfile: infra/Dockerfile
@@ -107,14 +143,16 @@ services:
         INSTALL_SPEECH: "true"
     command: uvicorn speech.main:app --host 0.0.0.0 --port 8007
     environment:
-      MODEL_NAME: ${WHISPER_MODEL:-small}
       WHISPER_MODEL: ${WHISPER_MODEL:-small}
       WHISPER_DEVICE: ${WHISPER_DEVICE:-cpu}
       WHISPER_COMPUTE_TYPE: ${WHISPER_COMPUTE_TYPE:-int8}
+      SPEECH_MAX_AUDIO_BYTES: ${SPEECH_MAX_AUDIO_BYTES:-26214400}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:
-      - whisper_cache:/root/.cache/huggingface
+      - whisper_cache:/home/sas/.cache/huggingface
+
   image_gen:
-    build: {context: .., dockerfile: infra/Dockerfile}
+    <<: *expert
     command: uvicorn image_gen.main:app --host 0.0.0.0 --port 8008
     environment:
       IMAGE_MODEL_BASE_URL: ${IMAGE_MODEL_BASE_URL:-}
@@ -123,16 +161,36 @@ services:
       IMAGE_WIDTH: ${IMAGE_WIDTH:-512}
       IMAGE_HEIGHT: ${IMAGE_HEIGHT:-512}
       IMAGE_TIMEOUT: ${IMAGE_TIMEOUT:-300}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
   agent:
-    build: {context: .., dockerfile: infra/Dockerfile}
+    <<: *expert
     command: uvicorn agent.main:app --host 0.0.0.0 --port 8009
-    volumes:
-      - agent_audit:/data
     environment:
       ALLOWED_TOOLS: ${ALLOWED_TOOLS:-}
+      AUDIT_LOG_PATH: /data/agent-audit.jsonl
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - agent_audit:/data
+
+  # Model-swap scheduler: keeps one big model resident at a time so a
+  # memory-constrained host does not OOM when the router swaps experts.
+  model_manager:
+    <<: *expert
+    command: uvicorn model_manager.main:app --host 0.0.0.0 --port 8010
+    environment:
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      MODEL_KEEP_ALIVE: ${MODEL_KEEP_ALIVE:-30m}
+      BIG_MODELS: ${BIG_MODELS:-llama3.1,deepseek-r1,qwen2.5-coder,mistral-large}
+      MODEL_LOAD_TIMEOUT: ${MODEL_LOAD_TIMEOUT:-600}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
 
 volumes:
   memory_data:
   whisper_cache:
   session_data:
   agent_audit:
+
+      MODEL_NAME: ${VISION_MODEL_NAME:-qwen2.5vl:3b}
+      MODEL_TIMEOUT: ${VISION_MODEL_TIMEOUT:-300}
+      MODEL_MAX_IMAGE_BYTES: ${MODEL_MAX_IMAGE_BYTES:-8388608}

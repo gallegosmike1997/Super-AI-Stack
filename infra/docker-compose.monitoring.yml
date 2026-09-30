@@ -1,17 +1,26 @@
 services:
   prometheus:
     image: prom/prometheus:v3.5.0
+    restart: unless-stopped
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
     depends_on:
       - gateway
 
   grafana:
     image: grafana/grafana:12.1.1
+    restart: unless-stopped
     ports:
       - "3000:3000"
+    environment:
+      # Anonymous admin for a local-only stack; set a real password before
+      # exposing this beyond the machine.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_BASIC_ENABLED: "true"
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:
@@ -19,3 +28,4 @@ services:
 
 volumes:
   grafana_data:
+  prometheus_data:

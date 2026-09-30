@@ -5,15 +5,45 @@ build/
 dist/
 wheels/
 *.egg-info
+.eggs/
 
 # Virtual environments
 .venv
 venv/
 .env
 
+# Test and lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Local service state (session DB, FAISS index, agent audit log)
+data/
+.sas-dev.pids
+*.db
+*.faiss
+*.jsonl
+!infra/**/*.jsonl
+
+# Windows
+Thumbs.db
+desktop.ini
+*.lnk
+
 # Windows NTFS Alternate Data Stream metadata (copied from WSL/Windows)
 *:Zone.Identifier
 
 # Editor/design-tool state (Kombai canvas)
 .kombai/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Build/scratch output from the web console tooling
+web/_*
+!web/index.html
 
