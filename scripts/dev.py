@@ -51,17 +51,29 @@ POLL_INTERVAL = 0.4
 
 
 def load_dotenv() -> None:
-    """Load ``.env`` into the environment without requiring python-dotenv."""
+    """Load ``.env`` into the environment without requiring python-dotenv.
+
+    One ``.env`` serves both Docker Compose and native runs, so the Compose
+    default of ``host.docker.internal`` is rewritten to the loopback address
+    here. That hostname only resolves from inside a container; a natively
+    started service cannot reach the model backend through it, and every expert
+    would silently fall back to its offline notice. Set SAS_KEEP_DOCKER_HOST=1
+    to keep the original value (e.g. when Ollama really is in another container).
+    """
     env_file = ROOT / ".env"
     if not env_file.exists():
         return
+    keep_docker_host = os.getenv("SAS_KEEP_DOCKER_HOST", "").lower() in {"1", "true", "yes", "on"}
     for raw in env_file.read_text(encoding="utf-8").splitlines():
         line = raw.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, _, value = line.partition("=")
+        value = value.strip().strip('"').strip("'")
+        if not keep_docker_host:
+            value = value.replace("//host.docker.internal", "//127.0.0.1")
         # Never clobber a value the caller already exported.
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+        os.environ.setdefault(key.strip(), value)
 
 
 def health_url(port: int) -> str:
@@ -81,8 +93,43 @@ def command_for(service: str, port: int) -> list[str]:
     return [sys.executable, "-m", "uvicorn", f"{service}.main:app", "--host", host, "--port", str(port)]
 
 
+# Per-expert settings. Each expert service reads the generic MODEL_BASE_URL /
+# MODEL_NAME pair, so a native run has to map these the way Compose does.
+# {service} is replaced with the service directory name.
+EXPERT_ENV: dict[str, str] = {
+    "llm_general": "GENERAL",
+    "llm_coding": "CODING",
+    "llm_reasoning": "REASONING",
+    "vision": "VISION",
+}
+
+
+def service_environment(service: str) -> dict[str, str]:
+    """Environment for one service, with per-expert model settings applied.
+
+    ``.env`` names model settings per expert (``GENERAL_MODEL_BASE_URL``), which
+    is what Compose maps onto the generic ``MODEL_BASE_URL``/``MODEL_NAME`` the
+    expert code reads. Without that mapping a native run silently started every
+    expert offline.
+    """
+    env = dict(os.environ)
+    prefix = EXPERT_ENV.get(service)
+    if prefix:
+        for suffix, generic in (
+            ("MODEL_BASE_URL", "MODEL_BASE_URL"),
+            ("MODEL_NAME", "MODEL_NAME"),
+        ):
+            specific = env.get(f"{prefix}_{suffix}")
+            if specific and not env.get(generic):
+                env[generic] = specific
+        timeout = env.get(f"{prefix}_MODEL_TIMEOUT")
+        if timeout and not env.get("MODEL_TIMEOUT"):
+            env["MODEL_TIMEOUT"] = timeout
+    return env
+
+
 def start(service: str, port: int) -> subprocess.Popen:
-    env = os.environ.copy()
+    env = service_environment(service)
     # The shared package lives at the repository root.
     env["PYTHONPATH"] = os.pathsep.join(filter(None, [str(ROOT), env.get("PYTHONPATH", "")]))
     process = subprocess.Popen(  # noqa: S603 - fixed argv, no shell

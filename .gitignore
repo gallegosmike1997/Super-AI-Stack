@@ -23,6 +23,7 @@ coverage.xml
 # Local service state (session DB, FAISS index, agent audit log)
 data/
 .sas-dev.pids
+logs_dev*.txt
 *.db
 *.faiss
 *.jsonl
