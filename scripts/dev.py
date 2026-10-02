@@ -208,7 +208,11 @@ def cmd_up(names: list[str]) -> int:
         print("start that service in the foreground to see its error.", file=sys.stderr)
         return 1
 
-    if any(name == "gateway" for name, _ in running):
+    # ``running`` holds (service, port, process) triples, so this unpack has to
+    # take three names. Unpacking two raised ValueError here, which crashed the
+    # launcher right after startup - every service was up but the console URL
+    # never printed and the "stop with" hint never appeared.
+    if any(name == "gateway" for name, _, _ in running):
         print("\nconsole: http://127.0.0.1:8000/")
     print("stop with: python scripts/dev.py stop")
 

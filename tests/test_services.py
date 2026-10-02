@@ -183,6 +183,16 @@ class TestRouting:
         assert extract_json("no json here") is None
         assert extract_json("[1, 2]") is None
 
+    def test_router_health_reports_its_model(self, monkeypatch):
+        """The console labels every card from /health, router included."""
+        from router import main as router
+
+        monkeypatch.setattr(router, "ROUTER_MODEL_NAME", "phi3:mini")
+        body = asyncio.run(router.health())
+        assert body["status"] == "ok"
+        assert body["model"] == "phi3:mini"
+        assert "backend" in body
+
     def test_router_falls_back_when_the_model_backend_is_down(self, monkeypatch):
         """Routing must never be the reason a user gets no answer."""
         import httpx

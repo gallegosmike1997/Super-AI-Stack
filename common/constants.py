@@ -31,8 +31,13 @@ SERVICE_URLS = {
 
 SUPPORTED_TASKS = set(TASK_TO_EXPERT)
 
-# Experts the gateway reports on: everything except the router itself.
+# Experts the gateway dispatches work to: everything except the router itself.
 EXPERT_SERVICES = tuple(name for name in SERVICE_URLS if name != "router")
+
+# Everything the console monitors. The router is excluded from dispatch but it
+# still runs a language model (ROUTER_MODEL_NAME) to classify requests, so it
+# belongs in the health grid - omitting it made the router card read as DOWN.
+MONITORED_SERVICES = tuple(SERVICE_URLS)
 
 # Port each service listens on, used by the dev launcher and the docs.
 SERVICE_PORTS = {

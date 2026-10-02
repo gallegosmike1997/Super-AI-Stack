@@ -14,6 +14,7 @@ from common.logging_utils import configure_logging
 from common.model_client import complete
 from common.model_manager import ensure_model
 from common.schemas import ExpertResponse, LLMRequest, RouterDecision, UnifiedResponse
+from common.utils import model_backend
 
 configure_logging("router")
 _LOG = logging.getLogger("router")
@@ -299,7 +300,17 @@ async def route(req: LLMRequest) -> UnifiedResponse:
 
 @app.get("/health")
 async def health() -> dict[str, str]:
-    return {"status": "ok", "service": "router"}
+    """Report the router model too, like every expert.
+
+    The console reads the live ``model`` tag off ``/health`` to label the router
+    card. Omitting it left the router with no model shown next to the others.
+    """
+    return {
+        "status": "ok",
+        "service": "router",
+        "model": ROUTER_MODEL_NAME,
+        "backend": model_backend(),
+    }
 
 
 @app.get("/ready")

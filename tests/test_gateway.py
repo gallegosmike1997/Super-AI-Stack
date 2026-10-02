@@ -199,9 +199,32 @@ class TestHealthEndpoints:
 
         self._patch_client(monkeypatch, handler)
         body = asyncio.run(main.stack())
-        assert set(body["services"]) == set(main.EXPERT_PORTS)
+        assert set(body["services"]) == set(main.MONITORED_PORTS)
         assert body["services"]["general"]["status"] == "ok"
         assert body["catalog"], "the MoE catalog should be published"
+
+    def test_stack_includes_the_router(self, monkeypatch):
+        """The catalog has a Router layer, so the stack must report its health."""
+        from gateway import main
+
+        def handler(request):
+            return httpx.Response(
+                200, json={"status": "ok", "service": "router", "model": "phi3:mini"}
+            )
+
+        self._patch_client(monkeypatch, handler)
+        body = asyncio.run(main.stack())
+        assert "router" in body["services"]
+        assert body["services"]["router"]["status"] == "ok"
+        assert body["services"]["router"]["model"] == "phi3:mini"
+
+    def test_router_stays_out_of_dispatch(self, monkeypatch):
+        """Monitoring the router must not make it a dispatch target."""
+        from common.constants import TASK_TO_EXPERT
+        from gateway import main
+
+        assert "router" not in main.EXPERT_PORTS
+        assert "router" not in TASK_TO_EXPERT.values()
 
     def test_stack_marks_a_down_expert(self, monkeypatch):
         from gateway import main

@@ -14,7 +14,13 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from common.constants import EXPERT_CATALOG, SERVICE_URLS, STREAM_EXPERTS, TASK_TO_EXPERT
+from common.constants import (
+    EXPERT_CATALOG,
+    MONITORED_SERVICES,
+    SERVICE_URLS,
+    STREAM_EXPERTS,
+    TASK_TO_EXPERT,
+)
 from common.env import env_float, env_int, env_str
 from common.health import probe_many, probe_many_with_latency
 from common.logging_utils import configure_logging, new_request_id, request_context
@@ -24,8 +30,12 @@ from common.session_store import append, history
 configure_logging("gateway")
 _LOG = logging.getLogger("gateway")
 
-# Experts the gateway talks to (everything except the router).
+# Experts the gateway dispatches work to (everything except the router).
 EXPERT_PORTS = {name: SERVICE_URLS[name] for name in SERVICE_URLS if name != "router"}
+
+# Health grid shown in the console: every service, router included. The catalog
+# lists a Router layer with its own model, so it has to be probed like the rest.
+MONITORED_PORTS = {name: SERVICE_URLS[name] for name in MONITORED_SERVICES}
 
 # Unified API entrypoint for Super AI Stack
 app = FastAPI(title="Super AI Stack Gateway")
@@ -593,7 +603,7 @@ async def ready() -> dict[str, object]:
 @app.get("/api/stack")
 async def stack() -> dict[str, object]:
     async with httpx.AsyncClient(timeout=HEALTH_TIMEOUT) as client:
-        services = await probe_many(EXPERT_PORTS, client, HEALTH_TIMEOUT)
+        services = await probe_many(MONITORED_PORTS, client, HEALTH_TIMEOUT)
     return {"catalog": EXPERT_CATALOG, "services": services}
 
 
@@ -606,7 +616,7 @@ async def diagnostics() -> dict[str, object]:
     Every probe runs concurrently so one slow peer cannot stall the panel.
     """
     async with httpx.AsyncClient(timeout=HEALTH_TIMEOUT) as client:
-        services_task = probe_many_with_latency(EXPERT_PORTS, client, HEALTH_TIMEOUT)
+        services_task = probe_many_with_latency(MONITORED_PORTS, client, HEALTH_TIMEOUT)
         memory_task = client.get(f"{SERVICE_URLS['memory']}/health", timeout=HEALTH_TIMEOUT)
         tools_task = client.get(f"{SERVICE_URLS['agent']}/tools", timeout=HEALTH_TIMEOUT)
         services, memory_response, tools_response = await asyncio.gather(
@@ -715,7 +725,7 @@ async def activity() -> dict[str, object]:
     """Live event feed + derived system alerts (all computed from real state)."""
     gw = gateway_stats()
     async with httpx.AsyncClient(timeout=HEALTH_TIMEOUT) as client:
-        probed = await probe_many(EXPERT_PORTS, client, HEALTH_TIMEOUT)
+        probed = await probe_many(MONITORED_PORTS, client, HEALTH_TIMEOUT)
     diag_services = {name: ("ok" if body.get("status") == "ok" else "down") for name, body in probed.items()}
 
     alerts: list[dict[str, str]] = []
